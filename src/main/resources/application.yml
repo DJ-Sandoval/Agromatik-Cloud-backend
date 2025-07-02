@@ -3,9 +3,10 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://mysql.railway.internal:3307/railway
+    url: jdbc:mysql://shuttle.proxy.rlwy.net:33156/railway
     username: root
     password: fDEwqueDFNrZnAFiUSkEbQvIZomWTSVv
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
