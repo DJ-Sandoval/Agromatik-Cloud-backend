@@ -20,22 +20,90 @@ public class SensorDataService implements SensorDataUseCase {
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
         SensorData entity = new SensorData();
-        BeanUtils.copyProperties(dto, entity);
-        if (entity.getTimestamp() == null)
-            entity.setTimestamp(LocalDateTime.now());
 
+        if (dto.getGeneral() != null) {
+            entity.setGeneralTemperature(dto.getGeneral().getTemperature());
+            entity.setGeneralHumidity(dto.getGeneral().getHumidity());
+        }
+
+        if (dto.getPlants() != null) {
+            entity.setPlantsTemperature(dto.getPlants().getTemperature());
+            entity.setPlantsHumidity(dto.getPlants().getHumidity());
+            entity.setPlantsSoilMoisture(dto.getPlants().getSoilMoisture());
+        }
+
+        if (dto.getWater() != null) {
+            entity.setWaterSoilMoisture(dto.getWater().getSoilMoisture());
+            entity.setWaterPH(dto.getWater().getPH());
+            entity.setWaterTDS1(dto.getWater().getTDS());
+        }
+
+        // Puedes calcular promedios aquí si quieres, o dejarlos nulos por ahora
+        entity.setTimestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now());
+
+        // Guardar entidad
         SensorData saved = port.save(entity);
-        SensorDataDTO result = new SensorDataDTO();
-        BeanUtils.copyProperties(saved, result);
-        return result;
+
+        // Mapear entidad guardada a DTO para respuesta (convertir plano a anidado)
+        SensorDataDTO responseDto = mapEntityToDto(saved);
+
+        return responseDto;
     }
 
     @Override
     public Page<SensorDataDTO> getAll(Pageable pageable) {
-        return port.findAll(pageable).map(entity -> {
-            SensorDataDTO dto = new SensorDataDTO();
-            BeanUtils.copyProperties(entity, dto);
-            return dto;
-        });
+        return port.findAll(pageable)
+                .map(entity -> {
+                    SensorDataDTO.GeneralData general = SensorDataDTO.GeneralData.builder()
+                            .temperature(entity.getGeneralTemperature())
+                            .humidity(entity.getGeneralHumidity())
+                            .build();
+
+                    SensorDataDTO.PlantsData plants = SensorDataDTO.PlantsData.builder()
+                            .temperature(entity.getPlantsTemperature())
+                            .humidity(entity.getPlantsHumidity())
+                            .soilMoisture(entity.getPlantsSoilMoisture())
+                            .build();
+
+                    SensorDataDTO.WaterData water = SensorDataDTO.WaterData.builder()
+                            .soilMoisture(entity.getWaterSoilMoisture())
+                            .pH(entity.getWaterPH())
+                            .TDS(entity.getWaterTDS1())
+                            .build();
+
+                    return SensorDataDTO.builder()
+                            .general(general)
+                            .plants(plants)
+                            .water(water)
+                            .timestamp(entity.getTimestamp())
+                            .build();
+                });
+    }
+
+
+    private SensorDataDTO mapEntityToDto(SensorData entity) {
+        SensorDataDTO.GeneralData general = SensorDataDTO.GeneralData.builder()
+                .temperature(entity.getGeneralTemperature())
+                .humidity(entity.getGeneralHumidity())
+                .build();
+
+        SensorDataDTO.PlantsData plants = SensorDataDTO.PlantsData.builder()
+                .temperature(entity.getPlantsTemperature())
+                .humidity(entity.getPlantsHumidity())
+                .soilMoisture(entity.getPlantsSoilMoisture())
+                .build();
+
+        SensorDataDTO.WaterData water = SensorDataDTO.WaterData.builder()
+                .soilMoisture(entity.getWaterSoilMoisture())
+                .pH(entity.getWaterPH())
+                .TDS(entity.getWaterTDS1())
+                .build();
+
+        return SensorDataDTO.builder()
+                .general(general)
+                .plants(plants)
+                .water(water)
+                .timestamp(entity.getTimestamp())
+                .build();
     }
 }
