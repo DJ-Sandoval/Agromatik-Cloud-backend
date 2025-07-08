@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.beans.BeanUtils;
@@ -73,6 +74,7 @@ public class SensorController {
                 .waterSoilMoisture(entity.getWaterSoilMoisture())
                 .waterPH(entity.getWaterPH())
                 .waterTDS(entity.getWaterTDS())
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 
