@@ -55,6 +55,7 @@ public class SensorDataDTO {
         private Integer soilMoisture;
         @JsonProperty("pH")
         private Double pH;
+        @JsonProperty("TDS")
         private Double TDS;
     }
 }

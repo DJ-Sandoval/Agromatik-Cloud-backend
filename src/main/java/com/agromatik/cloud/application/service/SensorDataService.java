@@ -39,7 +39,6 @@ public class SensorDataService implements SensorDataUseCase {
                 .waterSoilMoisture(dto.getWater() != null ? dto.getWater().getSoilMoisture() : null)
                 .waterPH(dto.getWater() != null ? dto.getWater().getPH() : null)
                 .waterTDS(dto.getWater() != null ? dto.getWater().getTDS() : null)
-                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
                 .build();
     }
 
