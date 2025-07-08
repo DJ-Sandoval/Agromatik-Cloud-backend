@@ -4,6 +4,7 @@ import com.agromatik.cloud.application.dto.SensorDataDTO;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.infrastructure.persistence.repository.SpringDataSensorRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
