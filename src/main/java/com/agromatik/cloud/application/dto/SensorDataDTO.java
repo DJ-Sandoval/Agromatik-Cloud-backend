@@ -11,8 +11,17 @@ import java.time.LocalDateTime;
 @Builder
 public class SensorDataDTO {
     private GeneralData general;
-    private PlantsData plants;
+    private PlantData plants;
     private WaterData water;
+
+    private Double generalTemperature;
+    private Double generalHumidity;
+    private Double plantsTemperature;
+    private Double plantsHumidity;
+    private Integer waterSoilMoisture;
+    private Integer plantsSoilMoisture;
+    private Double waterPH;
+    private Double waterTDS;
     private LocalDateTime timestamp;
 
     @Getter
@@ -30,10 +39,10 @@ public class SensorDataDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class PlantsData {
+    public static class PlantData {
         private Double temperature;
         private Double humidity;
-        private Double soilMoisture;
+        private Integer soilMoisture;
     }
 
     @Getter
@@ -42,7 +51,7 @@ public class SensorDataDTO {
     @AllArgsConstructor
     @Builder
     public static class WaterData {
-        private Double soilMoisture;
+        private Integer soilMoisture;
         private Double pH;
         private Double TDS;
     }

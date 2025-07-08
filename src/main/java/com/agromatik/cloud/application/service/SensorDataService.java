@@ -19,91 +19,58 @@ public class SensorDataService implements SensorDataUseCase {
 
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
-        SensorData entity = new SensorData();
-
-        if (dto.getGeneral() != null) {
-            entity.setGeneralTemperature(dto.getGeneral().getTemperature());
-            entity.setGeneralHumidity(dto.getGeneral().getHumidity());
-        }
-
-        if (dto.getPlants() != null) {
-            entity.setPlantsTemperature(dto.getPlants().getTemperature());
-            entity.setPlantsHumidity(dto.getPlants().getHumidity());
-            entity.setPlantsSoilMoisture(dto.getPlants().getSoilMoisture());
-        }
-
-        if (dto.getWater() != null) {
-            entity.setWaterSoilMoisture(dto.getWater().getSoilMoisture());
-            entity.setWaterPH(dto.getWater().getPH());
-            entity.setWaterTDS1(dto.getWater().getTDS());
-        }
-
-        // Puedes calcular promedios aquí si quieres, o dejarlos nulos por ahora
-        entity.setTimestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now());
-
-        // Guardar entidad
+        SensorData entity = mapDtoToEntity(dto);
         SensorData saved = port.save(entity);
-
-        // Mapear entidad guardada a DTO para respuesta (convertir plano a anidado)
-        SensorDataDTO responseDto = mapEntityToDto(saved);
-
-        return responseDto;
+        return mapEntityToDto(saved);
     }
 
     @Override
     public Page<SensorDataDTO> getAll(Pageable pageable) {
-        return port.findAll(pageable)
-                .map(entity -> {
-                    SensorDataDTO.GeneralData general = SensorDataDTO.GeneralData.builder()
-                            .temperature(entity.getGeneralTemperature())
-                            .humidity(entity.getGeneralHumidity())
-                            .build();
-
-                    SensorDataDTO.PlantsData plants = SensorDataDTO.PlantsData.builder()
-                            .temperature(entity.getPlantsTemperature())
-                            .humidity(entity.getPlantsHumidity())
-                            .soilMoisture(entity.getPlantsSoilMoisture())
-                            .build();
-
-                    SensorDataDTO.WaterData water = SensorDataDTO.WaterData.builder()
-                            .soilMoisture(entity.getWaterSoilMoisture())
-                            .pH(entity.getWaterPH())
-                            .TDS(entity.getWaterTDS1())
-                            .build();
-
-                    return SensorDataDTO.builder()
-                            .general(general)
-                            .plants(plants)
-                            .water(water)
-                            .timestamp(entity.getTimestamp())
-                            .build();
-                });
+        return port.findAll(pageable).map(this::mapEntityToDto);
     }
 
+    private SensorData mapDtoToEntity(SensorDataDTO dto) {
+        return SensorData.builder()
+                .generalTemperature(dto.getGeneral() != null ? dto.getGeneral().getTemperature() : null)
+                .generalHumidity(dto.getGeneral() != null ? dto.getGeneral().getHumidity() : null)
+                .plantsTemperature(dto.getPlants() != null ? dto.getPlants().getTemperature() : null)
+                .plantsHumidity(dto.getPlants() != null ? dto.getPlants().getHumidity() : null)
+                .plantsSoilMoisture(dto.getPlants() != null ? dto.getPlants().getSoilMoisture() : null)
+                .waterSoilMoisture(dto.getWater() != null ? dto.getWater().getSoilMoisture() : null)
+                .waterPH(dto.getWater() != null ? dto.getWater().getPH() : null)
+                .waterTDS(dto.getWater() != null ? dto.getWater().getTDS() : null)
+                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
+                .build();
+    }
 
     private SensorDataDTO mapEntityToDto(SensorData entity) {
-        SensorDataDTO.GeneralData general = SensorDataDTO.GeneralData.builder()
-                .temperature(entity.getGeneralTemperature())
-                .humidity(entity.getGeneralHumidity())
-                .build();
+        SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
+        general.setTemperature(entity.getGeneralTemperature());
+        general.setHumidity(entity.getGeneralHumidity());
 
-        SensorDataDTO.PlantsData plants = SensorDataDTO.PlantsData.builder()
-                .temperature(entity.getPlantsTemperature())
-                .humidity(entity.getPlantsHumidity())
-                .soilMoisture(entity.getPlantsSoilMoisture())
-                .build();
+        SensorDataDTO.PlantData plants = new SensorDataDTO.PlantData();
+        plants.setTemperature(entity.getPlantsTemperature());
+        plants.setHumidity(entity.getPlantsHumidity());
+        plants.setSoilMoisture(entity.getPlantsSoilMoisture());
 
-        SensorDataDTO.WaterData water = SensorDataDTO.WaterData.builder()
-                .soilMoisture(entity.getWaterSoilMoisture())
-                .pH(entity.getWaterPH())
-                .TDS(entity.getWaterTDS1())
-                .build();
+        SensorDataDTO.WaterData water = new SensorDataDTO.WaterData();
+        water.setSoilMoisture(entity.getWaterSoilMoisture());
+        water.setPH(entity.getWaterPH());
+        water.setTDS(entity.getWaterTDS());
 
         return SensorDataDTO.builder()
                 .general(general)
                 .plants(plants)
                 .water(water)
-                .timestamp(entity.getTimestamp())
+                .generalTemperature(entity.getGeneralTemperature())
+                .generalHumidity(entity.getGeneralHumidity())
+                .plantsTemperature(entity.getPlantsTemperature())
+                .plantsHumidity(entity.getPlantsHumidity())
+                .plantsSoilMoisture(entity.getPlantsSoilMoisture())
+                .waterSoilMoisture(entity.getWaterSoilMoisture())
+                .waterPH(entity.getWaterPH())
+                .waterTDS(entity.getWaterTDS())
                 .build();
     }
+
 }

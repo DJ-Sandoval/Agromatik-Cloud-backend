@@ -13,6 +13,8 @@ import reactor.core.publisher.Mono;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
+import java.util.Objects;
+
 import org.springframework.beans.BeanUtils;
 
 @RestController
@@ -33,38 +35,43 @@ public class SensorController {
                                       @RequestParam(defaultValue = "10") int size) {
         return useCase.getAll(PageRequest.of(page, size));
     }
+
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<SensorDataDTO> streamSensorData() {
         return Flux.interval(Duration.ofSeconds(1))
                 .flatMap(sequence -> Mono.fromCallable(() -> repository.findTopByOrderByTimestampDesc()))
                 .map(optional -> optional.orElse(null))
-                .filter(entity -> entity != null)
-                .map(entity -> mapEntityToDto(entity));
+                .filter(Objects::nonNull)
+                .map(this::mapEntityToDto);
     }
 
     private SensorDataDTO mapEntityToDto(SensorData entity) {
-        SensorDataDTO.GeneralData general = SensorDataDTO.GeneralData.builder()
-                .temperature(entity.getGeneralTemperature())
-                .humidity(entity.getGeneralHumidity())
-                .build();
+        SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
+        general.setTemperature(entity.getGeneralTemperature());
+        general.setHumidity(entity.getGeneralHumidity());
 
-        SensorDataDTO.PlantsData plants = SensorDataDTO.PlantsData.builder()
-                .temperature(entity.getPlantsTemperature())
-                .humidity(entity.getPlantsHumidity())
-                .soilMoisture(entity.getPlantsSoilMoisture())
-                .build();
+        SensorDataDTO.PlantData plants = new SensorDataDTO.PlantData();
+        plants.setTemperature(entity.getPlantsTemperature());
+        plants.setHumidity(entity.getPlantsHumidity());
+        plants.setSoilMoisture(entity.getPlantsSoilMoisture());
 
-        SensorDataDTO.WaterData water = SensorDataDTO.WaterData.builder()
-                .soilMoisture(entity.getWaterSoilMoisture())
-                .pH(entity.getWaterPH())
-                .TDS(entity.getWaterTDS1())
-                .build();
+        SensorDataDTO.WaterData water = new SensorDataDTO.WaterData();
+        water.setSoilMoisture(entity.getWaterSoilMoisture());
+        water.setPH(entity.getWaterPH());
+        water.setTDS(entity.getWaterTDS());
 
         return SensorDataDTO.builder()
                 .general(general)
                 .plants(plants)
                 .water(water)
-                .timestamp(entity.getTimestamp())
+                .generalTemperature(entity.getGeneralTemperature())
+                .generalHumidity(entity.getGeneralHumidity())
+                .plantsTemperature(entity.getPlantsTemperature())
+                .plantsHumidity(entity.getPlantsHumidity())
+                .plantsSoilMoisture(entity.getPlantsSoilMoisture())
+                .waterSoilMoisture(entity.getWaterSoilMoisture())
+                .waterPH(entity.getWaterPH())
+                .waterTDS(entity.getWaterTDS())
                 .build();
     }
 

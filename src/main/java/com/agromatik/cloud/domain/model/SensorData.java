@@ -17,18 +17,21 @@ public class SensorData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Flat values redundantes
     private Double generalTemperature;
-    private Double plantsTemperature;
     private Double generalHumidity;
+    private Double plantsTemperature;
     private Double plantsHumidity;
-    private Double waterSoilMoisture;
-    private Double plantsSoilMoisture;
-    private Double waterTDS1;
-    private Double waterTDS2;
+    private Integer waterSoilMoisture;
+    private Integer plantsSoilMoisture;
     private Double waterPH;
-    private Double temperatureAvg;
-    private Double humidityAvg;
-    private Double soilMoistureAvg;
-    private Double tdsAvg;
+    private Double waterTDS;
+
+    // Marca de tiempo de registro
     private LocalDateTime timestamp;
+
+    @PrePersist
+    public void prePersist() {
+        this.timestamp = LocalDateTime.now();
+    }
 }
