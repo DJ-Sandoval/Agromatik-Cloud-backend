@@ -1,5 +1,6 @@
 package com.agromatik.cloud.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -52,6 +53,7 @@ public class SensorDataDTO {
     @Builder
     public static class WaterData {
         private Integer soilMoisture;
+        @JsonProperty("pH")
         private Double pH;
         private Double TDS;
     }
