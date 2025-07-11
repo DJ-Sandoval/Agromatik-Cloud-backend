@@ -1,6 +1,7 @@
 package com.agromatik.cloud.application.dto;
 
 import com.agromatik.cloud.domain.enums.Role;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -33,6 +34,7 @@ public class UserDto {
     private String username;
 
     @Size(min = 8)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @NotNull
