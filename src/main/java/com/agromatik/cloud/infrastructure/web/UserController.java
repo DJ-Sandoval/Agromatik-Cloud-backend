@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,21 +19,33 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class UserController {
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto userDto) {
+        // Sanitizar entradas
+        userDto.setEmail(userDto.getEmail().trim());
+        userDto.setUsername(userDto.getUsername().trim());
+        userDto.setFirstName(userDto.getFirstName().trim());
+        userDto.setLastName(userDto.getLastName().trim());
+
+        // Mapear y registrar usuario
         User user = new User();
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+
+        // 🔐 Cifrar la contraseña antes de guardarla
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+
         user.setRole(userDto.getRole());
 
         User savedUser = userService.register(user);
         UserDto response = mapToDto(savedUser);
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/list")
     @PreAuthorize("hasAuthority('ADMINISTRATOR')")
