@@ -1,7 +1,7 @@
-package com.agromatik.cloud.infrastructure.persistence.entities;
+package com.agromatik.cloud.infrastructure.mysql.adapter;
 import com.agromatik.cloud.application.port.out.SensorDataPort;
 import com.agromatik.cloud.domain.model.SensorData;
-import com.agromatik.cloud.infrastructure.persistence.repository.SpringDataSensorRepository;
+import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

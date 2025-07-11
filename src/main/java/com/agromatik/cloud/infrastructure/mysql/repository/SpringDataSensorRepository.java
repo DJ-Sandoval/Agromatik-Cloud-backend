@@ -1,4 +1,4 @@
-package com.agromatik.cloud.infrastructure.persistence.repository;
+package com.agromatik.cloud.infrastructure.mysql.repository;
 
 import com.agromatik.cloud.domain.model.SensorData;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -3,8 +3,9 @@ package com.agromatik.cloud.infrastructure.web;
 import com.agromatik.cloud.application.dto.SensorDataDTO;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.domain.model.SensorData;
-import com.agromatik.cloud.infrastructure.persistence.repository.SpringDataSensorRepository;
-import lombok.Builder;
+import com.agromatik.cloud.domain.model.SensorDataMongo;
+import com.agromatik.cloud.infrastructure.mongo.repository.MongoSensorRepository;
+import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,20 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-import org.springframework.beans.BeanUtils;
-
 @RestController
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
-@RequestMapping("/api/v1/agromatik")
+@RequestMapping("/api/v1/agromatik/telerimetry")
 @RequiredArgsConstructor
 public class SensorController {
     private final SensorDataUseCase useCase;
-    private final SpringDataSensorRepository repository;
+    private final MongoSensorRepository mongoRepository; // Cambiado a repositorio de MongoDB
 
     @PostMapping
     public SensorDataDTO save(@RequestBody SensorDataDTO dto) {
@@ -41,42 +40,31 @@ public class SensorController {
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<SensorDataDTO> streamSensorData() {
         return Flux.interval(Duration.ofSeconds(1))
-                .flatMap(sequence -> Mono.fromCallable(() -> repository.findTopByOrderByTimestampDesc()))
-                .map(optional -> optional.orElse(null))
+                .flatMap(sequence -> Mono.fromCallable(() -> mongoRepository.findTopByOrderByTimestampDesc()))
                 .filter(Objects::nonNull)
-                .map(this::mapEntityToDto);
+                .map(this::mapMongoEntityToDto);
     }
 
-    private SensorDataDTO mapEntityToDto(SensorData entity) {
+    private SensorDataDTO mapMongoEntityToDto(SensorDataMongo entity) {
         SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
-        general.setTemperature(entity.getGeneralTemperature());
-        general.setHumidity(entity.getGeneralHumidity());
+        general.setTemperature(entity.getGeneral().getTemperature());
+        general.setHumidity(entity.getGeneral().getHumidity());
 
         SensorDataDTO.PlantData plants = new SensorDataDTO.PlantData();
-        plants.setTemperature(entity.getPlantsTemperature());
-        plants.setHumidity(entity.getPlantsHumidity());
-        plants.setSoilMoisture(entity.getPlantsSoilMoisture());
+        plants.setTemperature(entity.getPlants().getTemperature());
+        plants.setHumidity(entity.getPlants().getHumidity());
+        plants.setSoilMoisture(entity.getPlants().getSoilMoisture());
 
         SensorDataDTO.WaterData water = new SensorDataDTO.WaterData();
-        water.setSoilMoisture(entity.getWaterSoilMoisture());
-        water.setPH(entity.getWaterPH());
-        water.setTDS(entity.getWaterTDS());
+        water.setSoilMoisture(entity.getWater().getSoilMoisture());
+        water.setPH(entity.getWater().getPH());
+        water.setTDS(entity.getWater().getTDS());
 
         return SensorDataDTO.builder()
                 .general(general)
                 .plants(plants)
                 .water(water)
-                .generalTemperature(entity.getGeneralTemperature())
-                .generalHumidity(entity.getGeneralHumidity())
-                .plantsTemperature(entity.getPlantsTemperature())
-                .plantsHumidity(entity.getPlantsHumidity())
-                .plantsSoilMoisture(entity.getPlantsSoilMoisture())
-                .waterSoilMoisture(entity.getWaterSoilMoisture())
-                .waterPH(entity.getWaterPH())
-                .waterTDS(entity.getWaterTDS())
-                .timestamp(LocalDateTime.now())
+                .timestamp(entity.getTimestamp())
                 .build();
     }
-
-
 }
