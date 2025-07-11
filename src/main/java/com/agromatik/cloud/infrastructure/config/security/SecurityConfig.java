@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/agromatik/v1/usuarios/list").permitAll()
+                        .requestMatchers("/api/agromatik/v1/usuarios/register").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .anyRequest().authenticated()
                 )
