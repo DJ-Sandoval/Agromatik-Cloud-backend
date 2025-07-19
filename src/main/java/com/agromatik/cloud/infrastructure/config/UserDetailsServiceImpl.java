@@ -1,6 +1,6 @@
 package com.agromatik.cloud.infrastructure.config;
 
-import com.agromatik.cloud.application.service.UserService;
+import com.agromatik.cloud.domain.service.UserService;
 import com.agromatik.cloud.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

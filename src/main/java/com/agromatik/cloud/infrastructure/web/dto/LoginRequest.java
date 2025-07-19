@@ -1,4 +1,4 @@
-package com.agromatik.cloud.application.dto;
+package com.agromatik.cloud.infrastructure.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

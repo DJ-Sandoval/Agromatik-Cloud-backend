@@ -1,28 +1,31 @@
-package com.agromatik.cloud.application.service;
+package com.agromatik.cloud.domain.service;
 
-import com.agromatik.cloud.application.dto.SensorDataDTO;
+import com.agromatik.cloud.application.port.out.SensorHealthPort;
+import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.application.port.out.SensorDataMongoPort;
-import com.agromatik.cloud.application.port.out.SensorDataPort;
-import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.domain.model.SensorDataMongo;
+import com.agromatik.cloud.infrastructure.web.dto.SensorHealthDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class SensorDataService implements SensorDataUseCase {
     private final SensorDataMongoPort mongoSensorDataPort;
+    private final SensorHealthPort sensorHealthPort;
 
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
         SensorDataMongo entity = mapDtoToMongoEntity(dto);
         SensorDataMongo saved = mongoSensorDataPort.save(entity);
+        sensorHealthPort.recordSensorActivity("general");
+        sensorHealthPort.recordSensorActivity("plants");
+        sensorHealthPort.recordSensorActivity("water");
         return mapMongoEntityToDto(saved);
     }
 
@@ -68,4 +71,8 @@ public class SensorDataService implements SensorDataUseCase {
                 .build();
     }
 
+    @Override
+    public List<SensorHealthDTO> getSensorHealth() {
+        return sensorHealthPort.checkAllSensorsHealth();
+    }
 }

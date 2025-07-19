@@ -1,4 +1,4 @@
-package com.agromatik.cloud.application.dto;
+package com.agromatik.cloud.infrastructure.web.dto;
 
 import com.agromatik.cloud.domain.enums.Role;
 import lombok.*;

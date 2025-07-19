@@ -13,6 +13,16 @@ spring:
       uri: mongodb://mongo:cJMvFtbMQickAjyDmakLwvVOvTllmxuV@nozomi.proxy.rlwy.net:43589
       database: agromatik
 
+  cache:
+    type: redis
+
+  redis:
+    host: redis.railway.internal
+    port: 6379
+    username: default
+    password: xSTgLfAJphVscUfIOokWxxlWskuFrHIF
+    timeout: 5000
+
 
 
   jpa:

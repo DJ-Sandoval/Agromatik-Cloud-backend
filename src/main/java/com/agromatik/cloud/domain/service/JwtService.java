@@ -1,4 +1,4 @@
-package com.agromatik.cloud.application.service;
+package com.agromatik.cloud.domain.service;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;

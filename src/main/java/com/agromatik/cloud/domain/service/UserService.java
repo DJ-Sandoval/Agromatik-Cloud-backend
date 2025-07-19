@@ -1,4 +1,4 @@
-package com.agromatik.cloud.application.service;
+package com.agromatik.cloud.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import com.agromatik.cloud.application.port.out.UserRepositoryPort;

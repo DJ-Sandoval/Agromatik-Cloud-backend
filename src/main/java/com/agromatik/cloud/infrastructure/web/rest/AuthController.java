@@ -1,9 +1,9 @@
-package com.agromatik.cloud.infrastructure.web;
+package com.agromatik.cloud.infrastructure.web.rest;
 
-import com.agromatik.cloud.application.dto.LoginRequest;
-import com.agromatik.cloud.application.dto.LoginResponse;
-import com.agromatik.cloud.application.service.JwtService;
-import com.agromatik.cloud.application.service.UserService;
+import com.agromatik.cloud.infrastructure.web.dto.LoginRequest;
+import com.agromatik.cloud.infrastructure.web.dto.LoginResponse;
+import com.agromatik.cloud.domain.service.JwtService;
+import com.agromatik.cloud.domain.service.UserService;
 import com.agromatik.cloud.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

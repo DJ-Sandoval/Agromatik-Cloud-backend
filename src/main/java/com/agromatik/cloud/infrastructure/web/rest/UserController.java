@@ -1,7 +1,7 @@
-package com.agromatik.cloud.infrastructure.web;
+package com.agromatik.cloud.infrastructure.web.rest;
 
-import com.agromatik.cloud.application.dto.UserDto;
-import com.agromatik.cloud.application.service.UserService;
+import com.agromatik.cloud.infrastructure.web.dto.UserDto;
+import com.agromatik.cloud.domain.service.UserService;
 import com.agromatik.cloud.domain.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
