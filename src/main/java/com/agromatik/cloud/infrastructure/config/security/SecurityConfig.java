@@ -37,13 +37,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/agromatik/v1/usuarios/register").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/statistics/**").permitAll()
-                        .requestMatchers("/ws/sensor-data").permitAll()
+                        .requestMatchers("/ws/sensor-data/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/alerts/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
-
+        // Configuración explícita para WebSocket
+        http.securityMatcher("/api/v1/agromatik/telerimetry/ws/**")
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
         return http.build();
     }
 

@@ -22,7 +22,7 @@ public class WebSocketConfig {
     @Bean
     public HandlerMapping webSocketMapping() {
         Map<String, Object> map = new HashMap<>();
-        map.put("/ws/sensor-data", sensorWebSocketHandler);
+        map.put("/api/v1/agromatik/telerimetry/ws", sensorWebSocketHandler);
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setOrder(10); // prioridad del mapeo
