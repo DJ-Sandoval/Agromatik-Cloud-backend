@@ -1,6 +1,7 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.out.SensorHealthPort;
+import com.agromatik.cloud.domain.enums.SensorType;
 import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.application.port.out.SensorDataMongoPort;
@@ -18,6 +19,8 @@ import java.time.LocalDateTime;
 public class SensorDataService implements SensorDataUseCase {
     private final SensorDataMongoPort mongoSensorDataPort;
     private final SensorHealthPort sensorHealthPort;
+    private final SensorAlertService sensorAlertService;
+    private final RuleEngineService ruleEngineService; // Nueva dependencia
 
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
@@ -26,6 +29,8 @@ public class SensorDataService implements SensorDataUseCase {
         sensorHealthPort.recordSensorActivity("general");
         sensorHealthPort.recordSensorActivity("plants");
         sensorHealthPort.recordSensorActivity("water");
+        checkSensorRanges(dto);
+        ruleEngineService.evaluateRules(dto);
         return mapMongoEntityToDto(saved);
     }
 
@@ -74,5 +79,11 @@ public class SensorDataService implements SensorDataUseCase {
     @Override
     public List<SensorHealthDTO> getSensorHealth() {
         return sensorHealthPort.checkAllSensorsHealth();
+    }
+
+    @Override
+    public void checkSensorRanges(SensorDataDTO dto) {
+        SensorType sensorType = SensorType.valueOf(dto.getType().toUpperCase());
+        sensorAlertService.checkSensorValue(sensorType, dto.getValue(), dto.getSensorId());
     }
 }

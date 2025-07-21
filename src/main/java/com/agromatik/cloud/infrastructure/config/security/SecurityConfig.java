@@ -36,7 +36,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/usuarios/register").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
+                        .requestMatchers("/api/v1/agromatik/statistics/**").permitAll()
                         .requestMatchers("/ws/sensor-data").permitAll()
+                        .requestMatchers("/api/v1/agromatik/alerts/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),

@@ -10,4 +10,5 @@ public interface SensorDataUseCase {
     SensorDataDTO save(SensorDataDTO dto);
     Page<SensorDataDTO> getAll(Pageable pageable);
     List<SensorHealthDTO> getSensorHealth();
+    void checkSensorRanges(SensorDataDTO dto);
 }
