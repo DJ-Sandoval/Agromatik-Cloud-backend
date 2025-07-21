@@ -2,11 +2,14 @@ package com.agromatik.cloud.infrastructure.mysql.adapter;
 import com.agromatik.cloud.application.port.out.SensorDataPort;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
+import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -27,5 +30,10 @@ public class SensorDataAdapter implements SensorDataPort {
     @Override
     public Optional<SensorData> findLatest() {
         return repository.findTopByOrderByTimestampDesc();
+    }
+
+    @Override
+    public List<SensorDataDTO> findBySensorIdAndDateRange(String sensorId, LocalDate start, LocalDate end) {
+        return List.of();
     }
 }
