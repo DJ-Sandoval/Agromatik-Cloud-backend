@@ -30,24 +30,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Nueva forma de deshabilitar CSRF
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
+                        // Configuración específica para WebSocket primero
+                        .requestMatchers("/api/v1/agromatik/telerimetry/ws/**").permitAll()
+
+                        // Resto de rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/usuarios/register").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/statistics/**").permitAll()
-                        .requestMatchers("/ws/sensor-data/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/alerts/**").permitAll()
+
+                        // Todas las demás rutas requieren autenticación
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService),
-                        UsernamePasswordAuthenticationFilter.class);
-        // Configuración explícita para WebSocket
-        http.securityMatcher("/api/v1/agromatik/telerimetry/ws/**")
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
