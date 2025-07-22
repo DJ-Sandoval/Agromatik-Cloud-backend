@@ -6,8 +6,10 @@ import com.agromatik.cloud.domain.model.SensorDataMongo;
 import com.agromatik.cloud.infrastructure.mongo.repository.MongoSensorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -17,17 +19,22 @@ public class MongoSensorDataAdapter implements SensorDataMongoPort {
     private final MongoSensorRepository repository;
 
     @Override
-    public SensorDataMongo save(SensorDataMongo data) {
+    public Mono<SensorDataMongo> save(SensorDataMongo data) {
         return repository.save(data);
     }
 
     @Override
-    public Page<SensorDataMongo> findAll(Pageable pageable) {
-        return repository.findAll(pageable);
+    public Mono<Page<SensorDataMongo>> findAll(Pageable pageable) {
+        return repository.findAll()
+                .collectList()
+                .zipWith(repository.count())
+                .map(tuple -> new PageImpl<>(tuple.getT1(), pageable, tuple.getT2()));
     }
 
     @Override
-    public Optional<SensorDataMongo> findLatest() {
-        return Optional.ofNullable(repository.findTopByOrderByTimestampDesc());
+    public Mono<SensorDataMongo> findLatest() {
+        return repository.findTopByOrderByTimestampDesc();
     }
+
+
 }

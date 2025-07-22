@@ -6,7 +6,10 @@ import com.agromatik.cloud.infrastructure.web.dto.SensorHealthDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,18 +21,24 @@ public class SensorController {
     private final SensorDataUseCase useCase;
 
     @PostMapping
-    public SensorDataDTO save(@RequestBody SensorDataDTO dto) {
+    public Mono<SensorDataDTO> save(@RequestBody SensorDataDTO dto) {
         return useCase.save(dto);
     }
 
     @GetMapping
-    public Page<SensorDataDTO> getAll(@RequestParam(defaultValue = "0") int page,
-                                      @RequestParam(defaultValue = "10") int size) {
+    public Mono<Page<SensorDataDTO>> getAll(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "10") int size) {
         return useCase.getAll(PageRequest.of(page, size));
     }
+
 
     @GetMapping("/health")
     public List<SensorHealthDTO> getSensorHealth() {
         return useCase.getSensorHealth();
+    }
+
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SensorDataDTO> streamSensorData() {
+        return useCase.getSensorDataStream();
     }
 }

@@ -4,11 +4,15 @@ import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
 import com.agromatik.cloud.infrastructure.web.dto.SensorHealthDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.util.List;
 
 public interface SensorDataUseCase {
-    SensorDataDTO save(SensorDataDTO dto);
-    Page<SensorDataDTO> getAll(Pageable pageable);
+    Mono<SensorDataDTO> save(SensorDataDTO dto);
+    Mono<Page<SensorDataDTO>> getAll(Pageable pageable);
     List<SensorHealthDTO> getSensorHealth();
     void checkSensorRanges(SensorDataDTO dto);
+    Flux<SensorDataDTO> getSensorDataStream();
 }

@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 public class SensorCacheService {
 
     private final MongoSensorRepository mongoRepository;
-
+    /*
     @Cacheable(value = "latestSensorData")
     public SensorDataMongo getLatestSensorData() {
         return mongoRepository.findTopByOrderByTimestampDesc();
     }
+    */
+
 }

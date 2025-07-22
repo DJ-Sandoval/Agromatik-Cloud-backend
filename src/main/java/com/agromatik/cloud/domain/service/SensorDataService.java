@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 import java.util.List;
 import java.time.LocalDateTime;
 
@@ -23,20 +27,24 @@ public class SensorDataService implements SensorDataUseCase {
     private final RuleEngineService ruleEngineService; // Nueva dependencia
 
     @Override
-    public SensorDataDTO save(SensorDataDTO dto) {
+    public Mono<SensorDataDTO> save(SensorDataDTO dto) {
         SensorDataMongo entity = mapDtoToMongoEntity(dto);
-        SensorDataMongo saved = mongoSensorDataPort.save(entity);
-        sensorHealthPort.recordSensorActivity("general");
-        sensorHealthPort.recordSensorActivity("plants");
-        sensorHealthPort.recordSensorActivity("water");
-        checkSensorRanges(dto);
-        ruleEngineService.evaluateRules(dto);
-        return mapMongoEntityToDto(saved);
+        return mongoSensorDataPort.save(entity)
+                .doOnSuccess(saved -> {
+                    sensorHealthPort.recordSensorActivity("general");
+                    sensorHealthPort.recordSensorActivity("plants");
+                    sensorHealthPort.recordSensorActivity("water");
+                    checkSensorRanges(dto);
+                    ruleEngineService.evaluateRules(dto);
+                })
+                .map(this::mapMongoEntityToDto);
     }
 
+
     @Override
-    public Page<SensorDataDTO> getAll(Pageable pageable) {
-        return mongoSensorDataPort.findAll(pageable).map(this::mapMongoEntityToDto);
+    public Mono<Page<SensorDataDTO>> getAll(Pageable pageable) {
+        return mongoSensorDataPort.findAll(pageable)
+                .map(page -> page.map(this::mapMongoEntityToDto));
     }
 
     private SensorDataMongo mapDtoToMongoEntity(SensorDataDTO dto) {
@@ -85,5 +93,12 @@ public class SensorDataService implements SensorDataUseCase {
     public void checkSensorRanges(SensorDataDTO dto) {
         SensorType sensorType = SensorType.valueOf(dto.getType().toUpperCase());
         sensorAlertService.checkSensorValue(sensorType, dto.getValue(), dto.getSensorId());
+    }
+
+    @Override
+    public Flux<SensorDataDTO> getSensorDataStream() {
+        return Flux.interval(Duration.ofSeconds(1))
+                .flatMap(seq -> mongoSensorDataPort.findLatest())
+                .map(this::mapMongoEntityToDto);
     }
 }
