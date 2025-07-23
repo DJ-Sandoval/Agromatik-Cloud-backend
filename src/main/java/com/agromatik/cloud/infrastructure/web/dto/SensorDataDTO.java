@@ -23,9 +23,6 @@ public class SensorDataDTO {
     private Integer plantsSoilMoisture;
     private Double waterPH;
     private Double waterTDS;
-    private String sensorId;
-    private String type;  // "TEMPERATURE", "PLANTS", etc.
-    private double value;
     private LocalDateTime timestamp;
 
     @Getter

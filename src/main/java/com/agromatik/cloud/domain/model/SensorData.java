@@ -1,6 +1,8 @@
 package com.agromatik.cloud.domain.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,24 +16,42 @@ import java.time.LocalDateTime;
 @Builder
 public class SensorData {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    // Flat values redundantes
-    private Double generalTemperature;
-    private Double generalHumidity;
-    private Double plantsTemperature;
-    private Double plantsHumidity;
-    private Integer waterSoilMoisture;
-    private Integer plantsSoilMoisture;
-    private Double waterPH;
-    private Double waterTDS;
-
-    // Marca de tiempo de registro
+    private GeneralData general;
+    private PlantData plants;
+    private WaterData water;
     private LocalDateTime timestamp;
 
-    @PrePersist
-    public void prePersist() {
-        this.timestamp = LocalDateTime.now();
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class GeneralData {
+        private Double temperature;
+        private Double humidity;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class PlantData {
+        private Double temperature;
+        private Double humidity;
+        private Integer soilMoisture;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class WaterData {
+        private Integer soilMoisture;
+        private Double pH;
+        private Double TDS;
     }
 }
