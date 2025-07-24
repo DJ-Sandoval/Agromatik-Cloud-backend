@@ -36,4 +36,8 @@ public class Cultivo {
 
     @Enumerated(EnumType.STRING)
     private TipoCultivo tipoCultivo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

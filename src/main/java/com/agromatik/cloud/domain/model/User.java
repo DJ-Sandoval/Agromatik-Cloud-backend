@@ -6,6 +6,9 @@ import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -42,4 +45,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @NotNull
     private Role role;
+
+    // Relación uno a muchos con Cultivo
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cultivo> cultivos = new ArrayList<>();
 }

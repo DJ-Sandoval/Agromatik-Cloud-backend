@@ -1,12 +1,14 @@
 package com.agromatik.cloud.infrastructure.web.rest;
 
+import com.agromatik.cloud.application.port.in.UserService;
 import com.agromatik.cloud.infrastructure.web.dto.UserDto;
-import com.agromatik.cloud.domain.service.UserService;
+
 import com.agromatik.cloud.domain.model.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,79 +23,27 @@ public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto userDto) {
-        // Sanitizar entradas
-        userDto.setEmail(userDto.getEmail().trim());
-        userDto.setUsername(userDto.getUsername().trim());
-        userDto.setFirstName(userDto.getFirstName().trim());
-        userDto.setLastName(userDto.getLastName().trim());
-
-        // Mapear y registrar usuario
-        User user = new User();
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
-        user.setUsername(userDto.getUsername());
-
-        // 🔐 Cifrar la contraseña antes de guardarla
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-
-        user.setRole(userDto.getRole());
-
-        User savedUser = userService.register(user);
-        UserDto response = mapToDto(savedUser);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/list")
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userService.findAll()
-                .stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+    @GetMapping
+    public ResponseEntity<Page<UserDto>> listUsers(Pageable pageable) {
+        return ResponseEntity.ok(userService.listUsers(pageable));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or #id == authentication.principal.id")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        User user = userService.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(mapToDto(user));
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRATOR') or #id == authentication.principal.id")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
-        User user = new User();
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
-        user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setRole(userDto.getRole());
-
-        User updatedUser = userService.update(id, user);
-        return ResponseEntity.ok(mapToDto(updatedUser));
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
+        if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
+            userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        }
+        return ResponseEntity.ok(userService.updateUser(id, userDto));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.delete(id);
+        userService.deleteUser(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private UserDto mapToDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-        dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUsername());
-        dto.setRole(user.getRole());
-        return dto;
     }
 }

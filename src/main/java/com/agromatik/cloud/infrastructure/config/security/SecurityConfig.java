@@ -1,7 +1,6 @@
 package com.agromatik.cloud.infrastructure.config.security;
 
 import com.agromatik.cloud.domain.service.JwtService;
-import com.agromatik.cloud.infrastructure.config.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -18,14 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtService, userDetailsService);
-    }
-
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,21 +33,23 @@ public class SecurityConfig {
 
                         // Resto de rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/agromatik/v1/usuarios/register").permitAll()
+                        .requestMatchers("/api/agromatik/v1/usuarios/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
-                        .requestMatchers("/api/v1/agromatik/statistics/**").permitAll()
-                        .requestMatchers("/api/v1/agromatik/alerts/**").permitAll()
-
+                        .requestMatchers("/api/agromatik/v1/cultivos/**").permitAll()
                         // Todas las demás rutas requieren autenticación
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

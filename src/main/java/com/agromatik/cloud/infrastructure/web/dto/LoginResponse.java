@@ -9,9 +9,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class LoginResponse {
-    private Long id;
+    private Long userId;
     private String username;
-    private Role role;
+    private Long cultivoId;
     private String token;
     private String message;
 }

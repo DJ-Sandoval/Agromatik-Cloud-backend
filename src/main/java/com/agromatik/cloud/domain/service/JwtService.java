@@ -1,81 +1,75 @@
 package com.agromatik.cloud.domain.service;
+import com.agromatik.cloud.application.port.out.TokenRepository;
+import com.agromatik.cloud.domain.model.Token;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import com.agromatik.cloud.application.port.out.JwtTokenRepositoryPort;
-import com.agromatik.cloud.domain.model.JwtToken;
+
 import com.agromatik.cloud.domain.model.User;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+
 @Service
-@RequiredArgsConstructor
 public class JwtService {
-    private final JwtTokenRepositoryPort jwtTokenRepository;
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final Key secretKey;
+    private final long expiration;
+    private final TokenRepository tokenRepository;
 
-    @Value("${jwt.expiration}")
-    private long expiration;
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration, TokenRepository tokenRepository) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.expiration = expiration;
+        this.tokenRepository = tokenRepository;
     }
 
     public String generateToken(User user) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiryDate = now.plusSeconds(expiration / 1000);
 
         String token = Jwts.builder()
-                .subject(user.getUsername())
+                .setSubject(user.getUsername())
+                .claim("userId", user.getId())
                 .claim("role", user.getRole().name())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .setIssuedAt(Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
+                .setExpiration(Date.from(expiryDate.atZone(ZoneId.systemDefault()).toInstant()))
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
 
-        JwtToken jwtToken = JwtToken.builder()
-                .token(token)
+        Token tokenEntity = Token.builder()
+                .tokenValue(token)
                 .user(user)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()))
-                .revoked(false)
+                .issuedAt(now)
+                .expiresAt(expiryDate)
                 .build();
+        tokenRepository.save(tokenEntity);
 
-        jwtTokenRepository.save(jwtToken);
         return token;
     }
 
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token);
-
-            return jwtTokenRepository.findByToken(token)
-                    .map(t -> !t.isRevoked())
-                    .orElse(false);
-
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public String getUsernameFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
+    public Claims validateToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
+    public boolean isTokenValid(String token) {
+        return tokenRepository.existsByTokenValueAndRevokedAtIsNull(token);
+    }
+
+    public void revokeToken(String token) {
+        tokenRepository.findByTokenValue(token).ifPresent(t -> {
+            t.setRevokedAt(LocalDateTime.now());
+            tokenRepository.save(t);
+        });
+    }
 }
