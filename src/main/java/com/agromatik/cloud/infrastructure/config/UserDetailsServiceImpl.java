@@ -1,6 +1,5 @@
 package com.agromatik.cloud.infrastructure.config;
-
-import com.agromatik.cloud.domain.service.UserService;
+import com.agromatik.cloud.application.port.out.UserRepository;
 import com.agromatik.cloud.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,17 +13,16 @@ import java.util.Collections;
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private final UserService userService;
+
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()))
-        );
+                Collections.singletonList(() -> "ROLE_" + user.getRole().name()));
     }
 }
