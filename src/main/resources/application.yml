@@ -8,15 +8,9 @@ spring:
     password: fDEwqueDFNrZnAFiUSkEbQvIZomWTSVv
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  cache:
-    type: redis
 
-  redis:
-    host: redis.railway.internal
-    port: 6379
-    username: default
-    password: xSTgLfAJphVscUfIOokWxxlWskuFrHIF
-    timeout: 5000
+
+
 
   jpa:
     hibernate:
