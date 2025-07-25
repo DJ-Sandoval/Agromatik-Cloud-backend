@@ -9,8 +9,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface SensorDataUseCase {
-    Mono<SensorDataDTO> save(SensorDataDTO dto);
-    Mono<Page<SensorDataDTO>> getAll(Pageable pageable);
-    void checkSensorRanges(SensorDataDTO dto);
-    Flux<SensorDataDTO> getSensorDataStream();
+    SensorDataDTO save(SensorDataDTO dto);
+    Page<SensorDataDTO> getAll(Pageable pageable);
 }
+

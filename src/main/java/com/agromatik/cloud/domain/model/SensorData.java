@@ -14,52 +14,24 @@ import java.time.LocalDateTime;
 @Builder
 public class SensorData {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Embedded
-    private GeneralData general;
+    // Flat values redundantes
+    private Double generalTemperature;
+    private Double generalHumidity;
+    private Double plantsTemperature;
+    private Double plantsHumidity;
+    private Integer waterSoilMoisture;
+    private Integer plantsSoilMoisture;
+    private Double waterPH;
+    private Double waterTDS;
 
-    @Embedded
-    private PlantData plants;
-
-    @Embedded
-    private WaterData water;
-
+    // Marca de tiempo de registro
     private LocalDateTime timestamp;
 
-    @Embeddable
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class GeneralData {
-        private Double temperature;
-        private Double humidity;
-    }
-
-    @Embeddable
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class PlantData {
-        private Double temperature;
-        private Double humidity;
-        private Integer soilMoisture;
-    }
-
-    @Embeddable
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class WaterData {
-        private Integer soilMoisture;
-        private Double pH;
-        @Column(name = "tds")
-        private Double TDS;
+    @PrePersist
+    public void prePersist() {
+        this.timestamp = LocalDateTime.now();
     }
 }

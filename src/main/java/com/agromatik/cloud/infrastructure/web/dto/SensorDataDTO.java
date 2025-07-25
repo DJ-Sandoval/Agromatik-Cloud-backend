@@ -59,4 +59,3 @@ public class SensorDataDTO {
         private Double TDS;
     }
 }
-
