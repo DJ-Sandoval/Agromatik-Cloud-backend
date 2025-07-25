@@ -57,7 +57,6 @@ public class AuthServiceImpl implements AuthService {
         if (userDto.getRole().name().equalsIgnoreCase("ADMINISTRATOR")) {
             userDto.setRole(Role.ADMINISTRADOR);
         }
-
         User user = User.builder()
                 .firstName(userDto.getFirstName())
                 .lastName(userDto.getLastName())
@@ -66,8 +65,10 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .role(userDto.getRole())
                 .build();
+        User savedUser = userRepository.save(user); // Guarda y obtiene el usuario con ID
 
-        userRepository.save(user);
+        // Actualiza el DTO con el ID generado
+        userDto.setId(savedUser.getId());
         return userDto;
     }
 }
