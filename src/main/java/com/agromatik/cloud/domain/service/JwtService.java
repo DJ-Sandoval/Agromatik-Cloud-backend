@@ -19,7 +19,6 @@ import java.util.Date;
 
 @Service
 public class JwtService {
-
     private final Key secretKey;
     private final long expiration;
     private final TokenRepository tokenRepository;
