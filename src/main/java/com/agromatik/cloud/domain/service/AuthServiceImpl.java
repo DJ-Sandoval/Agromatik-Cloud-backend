@@ -1,6 +1,7 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.AuthService;
+import com.agromatik.cloud.application.port.out.UserRepositoryPort;
 import com.agromatik.cloud.domain.model.User;
 import com.agromatik.cloud.infrastructure.web.dto.LoginRequest;
 import com.agromatik.cloud.infrastructure.web.dto.LoginResponse;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private final UserRepository userRepository;
+    private final UserRepositoryPort userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
