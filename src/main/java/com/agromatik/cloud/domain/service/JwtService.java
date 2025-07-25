@@ -1,13 +1,11 @@
 package com.agromatik.cloud.domain.service;
-import com.agromatik.cloud.application.port.out.TokenRepository;
+import com.agromatik.cloud.application.port.out.TokenPort;
 import com.agromatik.cloud.domain.model.Token;
+import com.agromatik.cloud.infrastructure.mysql.repository.SpringTokenRepository;
 import io.jsonwebtoken.security.Keys;
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 
 import com.agromatik.cloud.domain.model.User;
 import io.jsonwebtoken.*;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +19,12 @@ import java.util.Date;
 public class JwtService {
     private final Key secretKey;
     private final long expiration;
-    private final TokenRepository tokenRepository;
+    private final SpringTokenRepository tokenRepository;
 
-    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration, TokenRepository tokenRepository) {
+    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration,SpringTokenRepository tokenRepository1) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expiration = expiration;
-        this.tokenRepository = tokenRepository;
+        this.tokenRepository = tokenRepository1;
     }
 
     public String generateToken(User user) {
