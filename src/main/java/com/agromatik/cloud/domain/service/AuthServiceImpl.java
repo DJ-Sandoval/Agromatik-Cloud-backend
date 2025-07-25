@@ -2,6 +2,7 @@ package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.AuthService;
 import com.agromatik.cloud.application.port.out.UserRepositoryPort;
+import com.agromatik.cloud.domain.enums.Role;
 import com.agromatik.cloud.domain.model.User;
 import com.agromatik.cloud.infrastructure.web.dto.LoginRequest;
 import com.agromatik.cloud.infrastructure.web.dto.LoginResponse;
@@ -51,6 +52,10 @@ public class AuthServiceImpl implements AuthService {
         }
         if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
+        }
+
+        if (userDto.getRole().name().equalsIgnoreCase("ADMINISTRATOR")) {
+            userDto.setRole(Role.ADMINISTRADOR);
         }
 
         User user = User.builder()
