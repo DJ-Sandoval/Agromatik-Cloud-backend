@@ -1,6 +1,7 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.UserService;
+import com.agromatik.cloud.infrastructure.mysql.repository.SpringUserRepository;
 import com.agromatik.cloud.infrastructure.web.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import com.agromatik.cloud.domain.model.User;
@@ -13,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final SpringUserRepository userRepository;
 
     @Override
     public Page<UserDto> listUsers(Pageable pageable) {
