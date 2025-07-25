@@ -1,20 +1,13 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.UserService;
-import com.agromatik.cloud.application.port.out.UserRepository;
 import com.agromatik.cloud.infrastructure.web.dto.UserDto;
 import lombok.RequiredArgsConstructor;
-import com.agromatik.cloud.application.port.out.UserRepositoryPort;
 import com.agromatik.cloud.domain.model.User;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

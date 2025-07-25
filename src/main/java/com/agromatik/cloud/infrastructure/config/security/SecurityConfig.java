@@ -28,15 +28,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        // Configuración específica para WebSocket primero
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
-
-                        // Resto de rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/usuarios/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/cultivos/**").permitAll()
-                        // Todas las demás rutas requieren autenticación
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

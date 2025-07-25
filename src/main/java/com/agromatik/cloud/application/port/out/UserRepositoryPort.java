@@ -10,6 +10,7 @@ public interface UserRepositoryPort {
     User save(User user);
     Optional<User> findById(Long id);
     Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
     List<User> findAll();
     void deleteById(Long id);
 }

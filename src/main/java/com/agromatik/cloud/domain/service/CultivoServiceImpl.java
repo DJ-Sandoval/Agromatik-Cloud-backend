@@ -2,7 +2,6 @@ package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.CultivoService;
 import com.agromatik.cloud.application.port.out.CultivoRepository;
-import com.agromatik.cloud.application.port.out.UserRepository;
 import com.agromatik.cloud.domain.model.Cultivo;
 import com.agromatik.cloud.domain.model.User;
 import lombok.RequiredArgsConstructor;

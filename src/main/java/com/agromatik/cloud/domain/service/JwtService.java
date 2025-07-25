@@ -15,16 +15,24 @@ import java.time.ZoneId;
 import java.util.Date;
 
 
+import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+
 @Service
 public class JwtService {
     private final Key secretKey;
     private final long expiration;
-    private final SpringTokenRepository tokenRepository;
+    private final TokenPort tokenPort;
 
-    public JwtService(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration,SpringTokenRepository tokenRepository1) {
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long expiration,
+            TokenPort tokenPort) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expiration = expiration;
-        this.tokenRepository = tokenRepository1;
+        this.tokenPort = tokenPort;
     }
 
     public String generateToken(User user) {
@@ -46,7 +54,7 @@ public class JwtService {
                 .issuedAt(now)
                 .expiresAt(expiryDate)
                 .build();
-        tokenRepository.save(tokenEntity);
+        tokenPort.save(tokenEntity);
 
         return token;
     }
@@ -60,13 +68,13 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
-        return tokenRepository.existsByTokenValueAndRevokedAtIsNull(token);
+        return tokenPort.existsByTokenValueAndRevokedAtIsNull(token);
     }
 
     public void revokeToken(String token) {
-        tokenRepository.findByTokenValue(token).ifPresent(t -> {
+        tokenPort.findByTokenValue(token).ifPresent(t -> {
             t.setRevokedAt(LocalDateTime.now());
-            tokenRepository.save(t);
+            tokenPort.save(t);
         });
     }
 }

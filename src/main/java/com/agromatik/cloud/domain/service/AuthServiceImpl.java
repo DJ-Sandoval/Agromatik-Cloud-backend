@@ -1,7 +1,6 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.AuthService;
-import com.agromatik.cloud.application.port.out.UserRepository;
 import com.agromatik.cloud.domain.model.User;
 import com.agromatik.cloud.infrastructure.web.dto.LoginRequest;
 import com.agromatik.cloud.infrastructure.web.dto.LoginResponse;
