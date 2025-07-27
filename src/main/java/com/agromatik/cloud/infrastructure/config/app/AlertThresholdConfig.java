@@ -7,6 +7,7 @@ import java.util.Map;
 
 @Component
 public class AlertThresholdConfig {
+    private Double disconnectedValue = -999.9;
     public Map<String, Threshold> getThresholds() {
         Map<String, Threshold> thresholds = new HashMap<>();
         thresholds.put("generalTemperature", new Threshold(10.0, 35.0));
@@ -19,5 +20,8 @@ public class AlertThresholdConfig {
         return thresholds;
     }
 
+    public boolean isDisconnected(Double value) {
+        return value != null && value.equals(disconnectedValue);
+    }
     public record Threshold(Double min, Double max) {}
 }

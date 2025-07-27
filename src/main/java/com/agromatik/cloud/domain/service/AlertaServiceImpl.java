@@ -1,6 +1,7 @@
 package com.agromatik.cloud.domain.service;
 
 import com.agromatik.cloud.application.port.in.AlertaService;
+import com.agromatik.cloud.application.port.in.RecomendacionService;
 import com.agromatik.cloud.application.port.out.AlertaPort;
 import com.agromatik.cloud.domain.enums.Severity;
 import com.agromatik.cloud.domain.model.Alerta;
@@ -19,6 +20,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AlertaServiceImpl implements AlertaService {
+    private final RecomendacionService recomendacionService;
     private final AlertaPort alertaPort;
     private final AlertThresholdConfig thresholdConfig;
 
@@ -38,13 +40,28 @@ public class AlertaServiceImpl implements AlertaService {
             String key = entry.getKey();
             Double valor = entry.getValue();
 
-            if (valor == null || valor == -999.9) continue; // ignorar valores inválidos
+            // Verificar si el sensor está desconectado
+            if (valor != null && valor == -999.9) {
+                Alerta alerta = Alerta.builder()
+                        .parametro(key)
+                        .descripcion("Sensor desconectado: " + key)
+                        .valorActual(valor)
+                        .umbralMin(null)
+                        .umbralMax(null)
+                        .timestamp(LocalDateTime.now())
+                        .severidad(Severity.CRITICA)
+                        .leida(false)
+                        .build();
 
+                Alerta alertaGuardada = alertaPort.guardar(alerta);
+                recomendacionService.generarRecomendacion(alertaGuardada);
+                continue;
+            }
             AlertThresholdConfig.Threshold threshold = thresholdConfig.getThresholds().get(key);
             if (threshold == null) continue;
 
             if (valor < threshold.min() || valor > threshold.max()) {
-                alertaPort.guardar(Alerta.builder()
+                Alerta alerta = Alerta.builder()
                         .parametro(key)
                         .descripcion("Valor fuera de umbral: " + key)
                         .valorActual(valor)
@@ -53,13 +70,28 @@ public class AlertaServiceImpl implements AlertaService {
                         .timestamp(LocalDateTime.now())
                         .severidad(definirSeveridad(valor, threshold))
                         .leida(false)
-                        .build());
+                        .build();
+                Alerta alertaGuardada = alertaPort.guardar(alerta);
+                recomendacionService.generarRecomendacion(alertaGuardada);
             }
         }
     }
 
     private void procesarValorSensor(String parametro, Double valor) {
-        if (valor == null || valor == -999.9) return;
+        // Verificar sensor desconectado
+        if (thresholdConfig.isDisconnected(valor)) {
+            alertaPort.guardar(Alerta.builder()
+                    .parametro(parametro)
+                    .descripcion("Sensor desconectado: " + parametro)
+                    .valorActual(valor)
+                    .umbralMin(null)
+                    .umbralMax(null)
+                    .timestamp(LocalDateTime.now())
+                    .severidad(Severity.CRITICA)
+                    .leida(false)
+                    .build());
+            return;
+        }
 
         AlertThresholdConfig.Threshold threshold = thresholdConfig.getThresholds().get(parametro);
         if (threshold == null) return;
