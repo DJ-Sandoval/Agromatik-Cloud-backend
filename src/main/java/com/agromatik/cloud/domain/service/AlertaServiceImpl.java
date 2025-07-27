@@ -33,6 +33,7 @@ public class AlertaServiceImpl implements AlertaService {
                 "plantsTemperature", data.getPlantsTemperature(),
                 "plantsHumidity", data.getPlantsHumidity(),
                 "plantsSoilMoisture", safeConvert(data.getPlantsSoilMoisture()),
+                "waterSoilMoisture", safeConvert(data.getWaterSoilMoisture()),
                 "waterPH", data.getWaterPH(),
                 "waterTDS", data.getWaterTDS()
         );

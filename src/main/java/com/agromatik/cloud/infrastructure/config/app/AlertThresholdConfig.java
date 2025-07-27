@@ -15,6 +15,7 @@ public class AlertThresholdConfig {
         thresholds.put("plantsTemperature", new Threshold(5.0, 30.0));
         thresholds.put("plantsHumidity", new Threshold(30.0, 80.0));
         thresholds.put("plantsSoilMoisture", new Threshold(30.0, 70.0));
+        thresholds.put("waterSoilMoisture", new Threshold(25.0, 70.0));
         thresholds.put("waterPH", new Threshold(6.0, 8.0));
         thresholds.put("waterTDS", new Threshold(300.0, 1000.0)); // -999.9 = sensor off
         return thresholds;
