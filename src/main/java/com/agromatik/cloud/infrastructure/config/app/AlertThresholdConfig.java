@@ -21,8 +21,9 @@ public class AlertThresholdConfig {
         return thresholds;
     }
 
+    // Modificar en AlertThresholdConfig.java
     public boolean isDisconnected(Double value) {
-        return value != null && value.equals(disconnectedValue);
+        return value != null && Math.abs(value - disconnectedValue) < 0.001;
     }
     public record Threshold(Double min, Double max) {}
 }

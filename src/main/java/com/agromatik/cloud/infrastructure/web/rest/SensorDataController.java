@@ -1,5 +1,6 @@
 package com.agromatik.cloud.infrastructure.web.rest;
 
+import com.agromatik.cloud.application.port.in.AlertaService;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.domain.service.SensorDataService;
@@ -24,6 +25,7 @@ import java.util.Objects;
 public class SensorDataController {
     private final SensorDataUseCase useCase;
     private final SpringDataSensorRepository repository;
+    private final AlertaService alertaService;
 
     @PostMapping
     public SensorDataDTO save(@RequestBody SensorDataDTO dto) {
@@ -36,12 +38,27 @@ public class SensorDataController {
         return useCase.getAll(PageRequest.of(page, size));
     }
 
+    /*
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<SensorDataDTO> streamSensorData() {
         return Flux.interval(Duration.ofSeconds(1))
                 .flatMap(sequence -> Mono.fromCallable(() -> repository.findTopByOrderByTimestampDesc()))
                 .map(optional -> optional.orElse(null))
                 .filter(Objects::nonNull)
+                .map(this::mapEntityToDto);
+    }
+    */
+
+    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SensorDataDTO> streamSensorData() {
+        return Flux.interval(Duration.ofSeconds(1))
+                .flatMap(sequence -> Mono.fromCallable(() -> repository.findTopByOrderByTimestampDesc()))
+                .map(optional -> optional.orElse(null))
+                .filter(Objects::nonNull)
+                .doOnNext(data -> {
+                    // Evaluar alertas para cada dato recibido
+                    alertaService.evaluarAlertas(data);
+                })
                 .map(this::mapEntityToDto);
     }
 

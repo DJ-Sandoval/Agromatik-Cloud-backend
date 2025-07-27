@@ -27,6 +27,9 @@ public class AlertaServiceImpl implements AlertaService {
 
     @Override
     public void evaluarAlertas(SensorData data) {
+        System.out.println("=== INICIO EVALUACIÓN ALERTAS ===");
+        System.out.println("Datos recibidos: " + data.toString());
+
         Map<String, Double> valores = Map.of(
                 "generalTemperature", data.getGeneralTemperature(),
                 "generalHumidity", data.getGeneralHumidity(),
@@ -37,12 +40,17 @@ public class AlertaServiceImpl implements AlertaService {
                 "waterPH", data.getWaterPH(),
                 "waterTDS", data.getWaterTDS()
         );
+
         for (var entry : valores.entrySet()) {
             String key = entry.getKey();
             Double valor = entry.getValue();
 
+            System.out.println("\nProcesando parámetro: " + key);
+            System.out.println("Valor: " + valor);
+
             // Verificar si el sensor está desconectado
-            if (valor != null && valor == -999.9) {
+            if (valor != null && thresholdConfig.isDisconnected(valor)) {
+                System.out.println("Sensor desconectado detectado: " + key);
                 Alerta alerta = Alerta.builder()
                         .parametro(key)
                         .descripcion("Sensor desconectado: " + key)
@@ -58,10 +66,19 @@ public class AlertaServiceImpl implements AlertaService {
                 recomendacionService.generarRecomendacion(alertaGuardada);
                 continue;
             }
+
             AlertThresholdConfig.Threshold threshold = thresholdConfig.getThresholds().get(key);
-            if (threshold == null) continue;
+            System.out.println("Umbrales para " + key + ": min=" +
+                    (threshold != null ? threshold.min() : "null") +
+                    ", max=" + (threshold != null ? threshold.max() : "null"));
+
+            if (threshold == null) {
+                System.out.println("No hay umbrales definidos para " + key);
+                continue;
+            }
 
             if (valor < threshold.min() || valor > threshold.max()) {
+                System.out.println("ALERTA: Valor fuera de umbral para " + key);
                 Alerta alerta = Alerta.builder()
                         .parametro(key)
                         .descripcion("Valor fuera de umbral: " + key)
@@ -74,8 +91,11 @@ public class AlertaServiceImpl implements AlertaService {
                         .build();
                 Alerta alertaGuardada = alertaPort.guardar(alerta);
                 recomendacionService.generarRecomendacion(alertaGuardada);
+            } else {
+                System.out.println("Valor dentro de umbrales para " + key);
             }
         }
+        System.out.println("=== FIN EVALUACIÓN ALERTAS ===");
     }
 
     private void procesarValorSensor(String parametro, Double valor) {
