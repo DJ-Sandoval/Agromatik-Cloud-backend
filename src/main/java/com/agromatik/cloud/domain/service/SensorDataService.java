@@ -1,5 +1,6 @@
 package com.agromatik.cloud.domain.service;
 
+import com.agromatik.cloud.application.port.in.AlertaService;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.application.port.out.SensorDataPort;
 import com.agromatik.cloud.domain.model.SensorData;
@@ -9,17 +10,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class SensorDataService implements SensorDataUseCase {
     private final SensorDataPort port;
+    private final AlertaService alertaService;
 
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
         SensorData entity = mapDtoToEntity(dto);
         SensorData saved = port.save(entity);
+        alertaService.evaluarAlertas(saved);
         return mapEntityToDto(saved);
     }
 

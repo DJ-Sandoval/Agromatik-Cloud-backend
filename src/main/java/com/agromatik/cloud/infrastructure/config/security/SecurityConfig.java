@@ -33,6 +33,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/agromatik/v1/usuarios/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/cultivos/**").permitAll()
+                        .requestMatchers("/api/v1/agromatik/alertas/**").permitAll()
+
+                        // Endpoints privados
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/info").permitAll()
+                        .requestMatchers("/actuator/prometheus").hasRole("MONITORING")
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
