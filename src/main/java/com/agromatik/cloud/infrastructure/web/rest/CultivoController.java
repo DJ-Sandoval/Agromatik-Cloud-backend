@@ -2,6 +2,7 @@ package com.agromatik.cloud.infrastructure.web.rest;
 
 import com.agromatik.cloud.application.port.in.CultivoService;
 import com.agromatik.cloud.domain.model.Cultivo;
+import com.agromatik.cloud.infrastructure.web.dto.CultivoDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,13 +27,43 @@ public class CultivoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Cultivo>> listCultivos(Pageable pageable) {
-        return ResponseEntity.ok(cultivoService.listCultivos(pageable));
+    public ResponseEntity<Page<CultivoDTO>> listCultivos(Pageable pageable) {
+        Page<CultivoDTO> result = cultivoService.listCultivos(pageable).map(cultivo ->
+                CultivoDTO.builder()
+                        .id(cultivo.getId())
+                        .propietario(cultivo.getPropietario())
+                        .ubicacionGPS(cultivo.getUbicacionGPS())
+                        .nombreLote(cultivo.getNombreLote())
+                        .region(cultivo.getRegion())
+                        .tamanioHectarea(cultivo.getTamanioHectarea())
+                        .cicloCultivo(cultivo.getCicloCultivo() != null ? cultivo.getCicloCultivo().name() : null)
+                        .laboresCulturales(cultivo.getLaboresCulturales() != null ? cultivo.getLaboresCulturales().name() : null)
+                        .metodoSiembra(cultivo.getMetodoSIembra() != null ? cultivo.getMetodoSIembra().name() : null)
+                        .tipoCultivo(cultivo.getTipoCultivo() != null ? cultivo.getTipoCultivo().name() : null)
+                        .userId(cultivo.getUser() != null ? cultivo.getUser().getId() : null)
+                        .build()
+        );
+        return ResponseEntity.ok(result);
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<Cultivo> getCultivoById(@PathVariable Long id) {
-        return ResponseEntity.ok(cultivoService.getCultivoById(id));
+    public ResponseEntity<CultivoDTO> getCultivoById(@PathVariable Long id) {
+        Cultivo cultivo = cultivoService.getCultivoById(id);
+        CultivoDTO dto = CultivoDTO.builder()
+                .id(cultivo.getId())
+                .propietario(cultivo.getPropietario())
+                .ubicacionGPS(cultivo.getUbicacionGPS())
+                .nombreLote(cultivo.getNombreLote())
+                .region(cultivo.getRegion())
+                .tamanioHectarea(cultivo.getTamanioHectarea())
+                .cicloCultivo(cultivo.getCicloCultivo() != null ? cultivo.getCicloCultivo().name() : null)
+                .laboresCulturales(cultivo.getLaboresCulturales() != null ? cultivo.getLaboresCulturales().name() : null)
+                .metodoSiembra(cultivo.getMetodoSIembra() != null ? cultivo.getMetodoSIembra().name() : null)
+                .tipoCultivo(cultivo.getTipoCultivo() != null ? cultivo.getTipoCultivo().name() : null)
+                .userId(cultivo.getUser() != null ? cultivo.getUser().getId() : null)
+                .build();
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{id}")

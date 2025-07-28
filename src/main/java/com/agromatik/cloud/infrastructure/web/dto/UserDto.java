@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -39,4 +41,6 @@ public class UserDto {
 
     @NotNull
     private Role role;
+
+    private List<CultivoDTO> cultivos;
 }
