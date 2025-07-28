@@ -49,6 +49,5 @@ public class User {
 
     // Relación uno a muchos con Cultivo
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
     private List<Cultivo> cultivos = new ArrayList<>();
 }

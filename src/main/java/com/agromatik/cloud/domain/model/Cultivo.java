@@ -40,6 +40,5 @@ public class Cultivo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @JsonBackReference
     private User user;
 }
