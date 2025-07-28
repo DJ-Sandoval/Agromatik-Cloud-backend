@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +18,17 @@ import java.util.List;
 public class RecomendacionController {
     private final RecomendacionService recomendacionService;
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<Page<Recomendacion>> obtenerTodas(
-            @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "10") int tamanio) {
-        return ResponseEntity.ok(recomendacionService.obtenerTodas(PageRequest.of(pagina, tamanio)));
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
+
+        Pageable pageable = sort != null ?
+                PageRequest.of(page, size, Sort.by(sort)) :
+                PageRequest.of(page, size);
+
+        return ResponseEntity.ok(recomendacionService.obtenerTodas(pageable));
     }
 
     @GetMapping("/alerta/{alertaId}")
