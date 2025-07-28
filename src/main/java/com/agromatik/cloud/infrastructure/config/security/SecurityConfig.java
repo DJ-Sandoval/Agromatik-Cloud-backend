@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/agromatik/alertas/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/recomendaciones/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+
                         // Endpoints privados
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/info").permitAll()
