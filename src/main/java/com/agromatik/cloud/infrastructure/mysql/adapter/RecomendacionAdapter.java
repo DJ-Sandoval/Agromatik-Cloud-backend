@@ -47,8 +47,8 @@ public class RecomendacionAdapter implements RecomendacionPort {
     }
 
     @Override
-    public List<Recomendacion> buscarTodas() {
-        return recomendacionRepository.findAll();
+    public Page<Recomendacion> buscarTodas(Pageable pageable) {
+        return recomendacionRepository.findAll(pageable);
     }
 
 
