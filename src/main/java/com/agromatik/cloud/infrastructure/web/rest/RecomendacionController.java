@@ -3,6 +3,9 @@ package com.agromatik.cloud.infrastructure.web.rest;
 import com.agromatik.cloud.application.port.in.RecomendacionService;
 import com.agromatik.cloud.domain.model.Recomendacion;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +18,10 @@ public class RecomendacionController {
     private final RecomendacionService recomendacionService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Recomendacion>> obtenerTodas() {
-        return ResponseEntity.ok(recomendacionService.obtenerTodas());
+    public ResponseEntity<Page<Recomendacion>> obtenerTodas(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio) {
+        return ResponseEntity.ok(recomendacionService.obtenerTodas(PageRequest.of(pagina, tamanio)));
     }
 
     @GetMapping("/alerta/{alertaId}")

@@ -7,6 +7,8 @@ import com.agromatik.cloud.domain.enums.TipoRecomendacion;
 import com.agromatik.cloud.domain.model.Alerta;
 import com.agromatik.cloud.domain.model.Recomendacion;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -106,7 +108,7 @@ public class RecomendacionServiceImpl implements RecomendacionService {
     }
 
     @Override
-    public List<Recomendacion> obtenerTodas() {
-        return recomendacionPort.buscarTodas();
+    public Page<Recomendacion> obtenerTodas(Pageable pageable) {
+        return recomendacionPort.buscarTodas(pageable);
     }
 }
