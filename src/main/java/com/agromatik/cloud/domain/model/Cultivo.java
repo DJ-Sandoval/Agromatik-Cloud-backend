@@ -4,6 +4,7 @@ import com.agromatik.cloud.domain.enums.CicloCultivo;
 import com.agromatik.cloud.domain.enums.LaboresCulturales;
 import com.agromatik.cloud.domain.enums.MetodoSiembra;
 import com.agromatik.cloud.domain.enums.TipoCultivo;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,5 +40,6 @@ public class Cultivo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 }

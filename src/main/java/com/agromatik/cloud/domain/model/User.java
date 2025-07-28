@@ -2,6 +2,7 @@ package com.agromatik.cloud.domain.model;
 
 
 import com.agromatik.cloud.domain.enums.Role;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -48,5 +49,6 @@ public class User {
 
     // Relación uno a muchos con Cultivo
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Cultivo> cultivos = new ArrayList<>();
 }
