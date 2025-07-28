@@ -45,4 +45,11 @@ public class RecomendacionAdapter implements RecomendacionPort {
     public Optional<Recomendacion> buscarPorId(Long id) {
         return recomendacionRepository.findById(id);
     }
+
+    @Override
+    public List<Recomendacion> buscarTodas() {
+        return recomendacionRepository.findAll();
+    }
+
+
 }

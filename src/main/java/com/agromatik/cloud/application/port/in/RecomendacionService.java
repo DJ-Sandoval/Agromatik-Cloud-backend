@@ -10,4 +10,5 @@ public interface RecomendacionService {
     List<Recomendacion> obtenerRecomendacionesPorAlerta(Long alertaId);
     List<Recomendacion> obtenerRecomendacionesNoImplementadas();
     void marcarComoImplementada(Long recomendacionId);
+    List<Recomendacion> obtenerTodas();
 }

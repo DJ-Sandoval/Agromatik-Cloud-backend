@@ -27,17 +27,17 @@ public class RecomendacionServiceImpl implements RecomendacionService {
 
     @Override
     public List<Recomendacion> obtenerRecomendacionesPorAlerta(Long alertaId) {
-        return List.of();
+        return recomendacionPort.buscarPorAlertaId(alertaId);
     }
 
     @Override
     public List<Recomendacion> obtenerRecomendacionesNoImplementadas() {
-        return List.of();
+        return recomendacionPort.buscarNoImplementadas();
     }
 
     @Override
     public void marcarComoImplementada(Long recomendacionId) {
-
+        recomendacionPort.actualizarComoImplementada(recomendacionId);
     }
 
     private Recomendacion construirRecomendacion(Alerta alerta) {
@@ -103,5 +103,10 @@ public class RecomendacionServiceImpl implements RecomendacionService {
         }
 
         return String.join("; ", acciones);
+    }
+
+    @Override
+    public List<Recomendacion> obtenerTodas() {
+        return recomendacionPort.buscarTodas();
     }
 }

@@ -11,4 +11,5 @@ public interface RecomendacionPort {
     List<Recomendacion> buscarNoImplementadas();
     void actualizarComoImplementada(Long id);
     Optional<Recomendacion> buscarPorId(Long id);
+    List<Recomendacion> buscarTodas();
 }

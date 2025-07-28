@@ -14,6 +14,11 @@ import java.util.List;
 public class RecomendacionController {
     private final RecomendacionService recomendacionService;
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Recomendacion>> obtenerTodas() {
+        return ResponseEntity.ok(recomendacionService.obtenerTodas());
+    }
+
     @GetMapping("/alerta/{alertaId}")
     public ResponseEntity<List<Recomendacion>> obtenerPorAlerta(@PathVariable Long alertaId) {
         return ResponseEntity.ok(recomendacionService.obtenerRecomendacionesPorAlerta(alertaId));
