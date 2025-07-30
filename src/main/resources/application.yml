@@ -42,3 +42,15 @@ management:
         enabled: true
     tags:
       application: agromatik-cloud
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: sandovalsantanajosearmando@gmail.com
+    password: qgzt udmk tnmp ashi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
