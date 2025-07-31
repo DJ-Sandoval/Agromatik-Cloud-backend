@@ -57,7 +57,7 @@ public class SensorDataController {
                 .filter(Objects::nonNull)
                 .doOnNext(data -> {
                     // Evaluar alertas para cada dato recibido
-                    alertaService.evaluarAlertas(data);
+                    //alertaService.evaluarAlertas(data);
                 })
                 .map(this::mapEntityToDto);
     }

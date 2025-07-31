@@ -1,6 +1,7 @@
 package com.agromatik.cloud.infrastructure.mysql.adapter;
 
 import com.agromatik.cloud.application.port.out.AlertaPort;
+import com.agromatik.cloud.domain.enums.Severity;
 import com.agromatik.cloud.domain.model.Alerta;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringAlertaRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,5 +50,15 @@ public class AlertaAdapter implements AlertaPort {
         List<Alerta> alertasNoLeidas = alertaRepository.findByLeida(false);
         alertasNoLeidas.forEach(alerta -> alerta.setLeida(true));
         alertaRepository.saveAll(alertasNoLeidas);
+    }
+
+    @Override
+    public Page<Alerta> buscarPorSeveridades(List<Severity> severidades, Pageable pageable) {
+        return alertaRepository.findBySeveridadIn(severidades, pageable);
+    }
+
+    @Override
+    public Page<Alerta> buscarPorLeidaYSeveridades(boolean leida, List<Severity> severidades, Pageable pageable) {
+        return alertaRepository.findByLeidaAndSeveridadIn(leida, severidades, pageable);
     }
 }

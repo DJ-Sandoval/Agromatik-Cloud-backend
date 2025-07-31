@@ -1,6 +1,7 @@
 package com.agromatik.cloud.infrastructure.web.rest;
 
 import com.agromatik.cloud.application.port.in.AlertaService;
+import com.agromatik.cloud.domain.enums.Severity;
 import com.agromatik.cloud.domain.model.Alerta;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.domain.service.AlertaMonitorService;
@@ -73,5 +74,32 @@ public class AlertaController {
     @GetMapping("/nuevas")
     public ResponseEntity<List<Alerta>> obtenerAlertasRecientes() {
         return ResponseEntity.ok(alertaMonitorService.obtenerNuevasAlertasYLimpiar());
+    }
+
+    @GetMapping("/severidad")
+    public ResponseEntity<Page<Alerta>> obtenerAlertasPorSeveridad(
+            @RequestParam List<Severity> severidades,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamaño) {
+        return ResponseEntity.ok(
+                alertaService.obtenerPorSeveridades(severidades, PageRequest.of(pagina, tamaño)));
+    }
+
+    @GetMapping("/no-leidas/severidad")
+    public ResponseEntity<Page<Alerta>> obtenerAlertasNoLeidasPorSeveridad(
+            @RequestParam List<Severity> severidades,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamaño) {
+        return ResponseEntity.ok(
+                alertaService.obtenerPorEstadoLecturaYSeveridades(false, severidades, PageRequest.of(pagina, tamaño)));
+    }
+
+    @GetMapping("/leidas/severidad")
+    public ResponseEntity<Page<Alerta>> obtenerAlertasLeidasPorSeveridad(
+            @RequestParam List<Severity> severidades,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamaño) {
+        return ResponseEntity.ok(
+                alertaService.obtenerPorEstadoLecturaYSeveridades(true, severidades, PageRequest.of(pagina, tamaño)));
     }
 }

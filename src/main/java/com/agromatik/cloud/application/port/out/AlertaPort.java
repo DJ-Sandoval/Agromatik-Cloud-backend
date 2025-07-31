@@ -1,5 +1,6 @@
 package com.agromatik.cloud.application.port.out;
 
+import com.agromatik.cloud.domain.enums.Severity;
 import com.agromatik.cloud.domain.model.Alerta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,4 +15,6 @@ public interface AlertaPort {
     Optional<Alerta> buscarPorId(Long id);
     void actualizarComoLeida(Long id);
     void actualizarTodasComoLeidas();
+    Page<Alerta> buscarPorSeveridades(List<Severity> severidades, Pageable pageable);
+    Page<Alerta> buscarPorLeidaYSeveridades(boolean leida, List<Severity> severidades, Pageable pageable);
 }

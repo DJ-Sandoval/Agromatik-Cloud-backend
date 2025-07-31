@@ -7,6 +7,7 @@ import com.agromatik.cloud.infrastructure.config.app.AlertThresholdConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 // UseCase
@@ -19,4 +20,6 @@ public interface AlertaService {
     Optional<Alerta> obtenerPorId(Long id);
     void marcarComoLeida(Long id);
     void marcarTodasComoLeidas();
+    Page<Alerta> obtenerPorSeveridades(List<Severity> severidades, Pageable pageable);
+    Page<Alerta> obtenerPorEstadoLecturaYSeveridades(boolean leida, List<Severity> severidades, Pageable pageable);
 }

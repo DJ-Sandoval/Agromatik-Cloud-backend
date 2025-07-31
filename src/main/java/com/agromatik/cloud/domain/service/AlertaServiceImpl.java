@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -183,6 +184,16 @@ public class AlertaServiceImpl implements AlertaService {
                 .severidad(definirSeveridad(valor, threshold))
                 .leida(false)
                 .build();
+    }
+
+    @Override
+    public Page<Alerta> obtenerPorSeveridades(List<Severity> severidades, Pageable pageable) {
+        return alertaPort.buscarPorSeveridades(severidades, pageable);
+    }
+
+    @Override
+    public Page<Alerta> obtenerPorEstadoLecturaYSeveridades(boolean leida, List<Severity> severidades, Pageable pageable) {
+        return alertaPort.buscarPorLeidaYSeveridades(leida, severidades, pageable);
     }
 
 }
