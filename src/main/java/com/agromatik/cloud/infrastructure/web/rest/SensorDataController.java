@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,9 +37,28 @@ public class SensorDataController {
         return useCase.save(dto);
     }
 
+    /*
     @GetMapping
     public Page<SensorDataDTO> getAll(@RequestParam(defaultValue = "0") int page,
                                       @RequestParam(defaultValue = "10") int size) {
+        return useCase.getAll(PageRequest.of(page, size));
+    }
+    */
+
+
+    @GetMapping
+    public Page<SensorDataDTO> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        if (startDate != null && endDate != null) {
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            return useCase.getByDateRange(startDateTime, endDateTime, PageRequest.of(page, size));
+        }
+
         return useCase.getAll(PageRequest.of(page, size));
     }
 

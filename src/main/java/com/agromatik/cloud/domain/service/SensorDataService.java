@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class SensorDataService implements SensorDataUseCase {
@@ -27,6 +29,11 @@ public class SensorDataService implements SensorDataUseCase {
     @Override
     public Page<SensorDataDTO> getAll(Pageable pageable) {
         return port.findAll(pageable).map(this::mapEntityToDto);
+    }
+
+    @Override
+    public Page<SensorDataDTO> getByDateRange(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return port.findByTimestampBetween(startDate, endDate, pageable).map(this::mapEntityToDto);
     }
 
     private SensorData mapDtoToEntity(SensorDataDTO dto) {
