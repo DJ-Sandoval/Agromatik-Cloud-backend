@@ -7,6 +7,7 @@ import com.agromatik.cloud.domain.service.SensorDataService;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
 import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -18,7 +19,9 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/agromatik/telerimetry")
 @RequiredArgsConstructor
@@ -49,6 +52,7 @@ public class SensorDataController {
     }
     */
 
+    /*
     @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<SensorDataDTO> streamSensorData() {
         return Flux.interval(Duration.ofSeconds(1))
@@ -61,36 +65,69 @@ public class SensorDataController {
                 })
                 .map(this::mapEntityToDto);
     }
+    */
+
+    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SensorDataDTO> streamSensorData() {
+        return Flux.interval(Duration.ofSeconds(1))
+                .flatMap(sequence -> Mono.fromCallable(() -> repository.findTopByOrderByTimestampDesc())
+                        .onErrorResume(e -> {
+                            log.warn("Error fetching sensor data: {}", e.getMessage());
+                            return Mono.empty();
+                        }))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(Objects::nonNull)
+                .map(this::mapEntityToDto)
+                .filter(Objects::nonNull)
+                .doOnNext(data -> {
+                    try {
+                        //alertaService.evaluarAlertas(data);
+                    } catch (Exception e) {
+                        log.warn("Error evaluating alerts: {}", e.getMessage());
+                    }
+                });
+    }
 
     private SensorDataDTO mapEntityToDto(SensorData entity) {
-        SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
-        general.setTemperature(entity.getGeneralTemperature());
-        general.setHumidity(entity.getGeneralHumidity());
+        if (entity == null) {
+            return null;
+        }
 
-        SensorDataDTO.PlantData plants = new SensorDataDTO.PlantData();
-        plants.setTemperature(entity.getPlantsTemperature());
-        plants.setHumidity(entity.getPlantsHumidity());
-        plants.setSoilMoisture(entity.getPlantsSoilMoisture());
+        try {
+            SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
+            general.setTemperature(entity.getGeneralTemperature());
+            general.setHumidity(entity.getGeneralHumidity());
 
-        SensorDataDTO.WaterData water = new SensorDataDTO.WaterData();
-        water.setSoilMoisture(entity.getWaterSoilMoisture());
-        water.setPH(entity.getWaterPH());
-        water.setTDS(entity.getWaterTDS());
+            SensorDataDTO.PlantData plants = new SensorDataDTO.PlantData();
+            plants.setTemperature(entity.getPlantsTemperature());
+            plants.setHumidity(entity.getPlantsHumidity());
+            plants.setSoilMoisture(entity.getPlantsSoilMoisture());
 
-        return SensorDataDTO.builder()
-                .general(general)
-                .plants(plants)
-                .water(water)
-                .generalTemperature(entity.getGeneralTemperature())
-                .generalHumidity(entity.getGeneralHumidity())
-                .plantsTemperature(entity.getPlantsTemperature())
-                .plantsHumidity(entity.getPlantsHumidity())
-                .plantsSoilMoisture(entity.getPlantsSoilMoisture())
-                .waterSoilMoisture(entity.getWaterSoilMoisture())
-                .waterPH(entity.getWaterPH())
-                .waterTDS(entity.getWaterTDS())
-                .timestamp(LocalDateTime.now())
-                .build();
+            SensorDataDTO.WaterData water = new SensorDataDTO.WaterData();
+            water.setSoilMoisture(entity.getWaterSoilMoisture());
+            water.setPH(entity.getWaterPH());
+            water.setTDS(entity.getWaterTDS());
+
+            return SensorDataDTO.builder()
+                    .general(general)
+                    .plants(plants)
+                    .water(water)
+                    .generalTemperature(entity.getGeneralTemperature())
+                    .generalHumidity(entity.getGeneralHumidity())
+                    .plantsTemperature(entity.getPlantsTemperature())
+                    .plantsHumidity(entity.getPlantsHumidity())
+                    .plantsSoilMoisture(entity.getPlantsSoilMoisture())
+                    .waterSoilMoisture(entity.getWaterSoilMoisture())
+                    .waterPH(entity.getWaterPH())
+                    .waterTDS(entity.getWaterTDS())
+                    .timestamp(entity.getTimestamp()) // Usar el timestamp de la entidad, no now()
+                    .build();
+        } catch (Exception e) {
+            log.error("Error mapping entity to DTO: {}", e.getMessage());
+            return null;
+        }
     }
+
 
 }
