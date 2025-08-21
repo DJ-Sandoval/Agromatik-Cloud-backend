@@ -30,8 +30,5 @@ public class SensorData {
     // Marca de tiempo de registro
     private LocalDateTime timestamp;
 
-    @PrePersist
-    public void prePersist() {
-        this.timestamp = LocalDateTime.now();
-    }
+
 }
