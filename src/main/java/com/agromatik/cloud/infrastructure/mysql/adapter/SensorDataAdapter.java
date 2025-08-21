@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Component
@@ -28,5 +29,10 @@ public class SensorDataAdapter implements SensorDataPort {
     @Override
     public Optional<SensorData> findLatest() {
         return repository.findTopByOrderByTimestampDesc();
+    }
+
+    @Override
+    public Page<SensorData> findByTimestampBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return repository.findByTimestampBetween(startDate, endDate, pageable);
     }
 }
