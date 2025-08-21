@@ -103,7 +103,11 @@ public class SensorDataController {
                 .filter(Objects::nonNull)
                 .doOnNext(data -> {
                     try {
-                        //alertaService.evaluarAlertas(data);
+                        // Asegurar que el timestamp no sea nulo
+                        if (data.getTimestamp() == null) {
+                            data.setTimestamp(LocalDateTime.now());
+                        }
+                        // alertaService.evaluarAlertas(data);
                     } catch (Exception e) {
                         log.warn("Error evaluating alerts: {}", e.getMessage());
                     }
