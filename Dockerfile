@@ -1,30 +1,46 @@
-# Etapa de build
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# Build stage
+FROM eclipse-temurin:17-jdk-jammy AS builder
+WORKDIR /workspace/app
 
-# Crea el directorio de trabajo dentro del contenedor
+# Copy Maven wrapper and pom.xml
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Download dependencies first (cache optimization)
+RUN chmod +x mvnw && \
+    ./mvnw dependency:go-offline -B
+
+# Copy source code
+COPY src src
+
+# Build the application
+RUN ./mvnw clean package -DskipTests
+
+# Runtime stage
+FROM eclipse-temurin:17-jre-jammy AS runtime
 WORKDIR /app
 
-# Copia todo el proyecto al contenedor
-COPY . .
+# Create non-root user
+RUN groupadd -r spring && useradd -r -g spring spring && \
+    mkdir -p /app && chown -R spring:spring /app
 
-# Ejecuta la build del proyecto sin correr los tests
-RUN mvn clean package -DskipTests
+# Copy the built application
+COPY --from=builder --chown=spring:spring /workspace/app/target/*.jar app.jar
 
-# Etapa de ejecución
-FROM eclipse-temurin:17-jre-focal
-
-# Crea un usuario no-root por seguridad
-RUN groupadd -r spring && useradd -r -g spring spring
+# Switch to non-root user
 USER spring
 
-# Crea directorio de trabajo
-WORKDIR /app
-
-# Copia el JAR desde el builder
-COPY --from=builder /app/target/*.jar app.jar
-
-# Expone el puerto 8080
+# Expose port
 EXPOSE 8080
 
-# Comando por defecto al iniciar el contenedor
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Entry point with optimized JVM settings
+ENTRYPOINT ["java", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-jar", "/app/app.jar"]

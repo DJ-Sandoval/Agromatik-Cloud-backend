@@ -14,8 +14,16 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://agromatik-db:3306/agromatik_db
       - SPRING_DATASOURCE_USERNAME=agromatik_user
       - SPRING_DATASOURCE_PASSWORD=agromatik_password123
+      - JWT_SECRET=MIICWwIBAAKBgQCtYo32glu50D5XU3e7jk5RW3OvmmSIA4RxvS2N7acGixkvRkkn2yIGQXGhMmWzU6dT4gKEdsdJugP7iv5ornIs+VNLzunXLGu+qTHeG5BQJneugeTdSNZsu4cf7j0XrHo0mDONExkvKiXsG32XqqZ/8QJx9WZA3U+QV4JHrHd82wIDAQABAn8ArWHglKHHGAkmTi0pjmS/7JuHFBNQdLMPvq1u4H7Gh8SRarTecvyvCZJoDspW6Py+VyOrYMtmflOFqAVWY1gO00QrvPO93iuy5dQCQGZ64qmDjWaozOdnf73C2ZFaWcw052ReKRvPvoVoQYrhTN6ALcL5/Pw1J/oQ/Cf5XXB5AkEA4XIV80lGISHEB8vMAe02bMN+g04k8RpzloqS78ILcW7NfP3aC0Yiu4eN52epFkUNnwv1OG5VSxTs36ahUDCe3wJBAMTiNLwlvyG46Rp9/bDn0JVN+RRghMeHkf+59apHIRR8s4HwJY3aMhl3l0DzFtSUZg7OvMbFx2MBrT7mIPJwbYUCQQC6kguQVuduq97rBMFEJuePgwnD6Hux/E4EG5IWUOPfb+8mrX4xLk24HCpXgvXvtB3drau2k7iKdjrBq8h78IDJAkAfUwom4S6Os/fKcj85tTg3eQdnGZAmmsg80p5mcBiwRMLeqpGfBxcvfBqBh+ua+N1f/76DNZZqhyrENiMJz59tAkEAkbjouc73fd5LPaOH/4cAyAHTIfKaOIoq5l97a1ttm9sec5hb7AylfG/Z8sluHWNtMCf01LR6t+NmHtVsACorbg==
+      - JWT_EXPIRATION=86400000
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=sandovalsantanajosearmando@gmail.com
+      - SMTP_PASSWORD=qgzt udmk tnmp ashi
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:MaxRAMPercentage=75.0
     depends_on:
-      - agromatik-db
+      agromatik-db:
+        condition: service_healthy
     networks:
       - agromatik-network
     restart: unless-stopped
@@ -24,6 +32,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    volumes:
+      - ./logs:/app/logs
 
   agromatik-db:
     image: mysql:8.0
@@ -33,11 +43,13 @@ services:
       - MYSQL_DATABASE=agromatik_db
       - MYSQL_USER=agromatik_user
       - MYSQL_PASSWORD=agromatik_password123
+      - MYSQL_INNODB_BUFFER_POOL_SIZE=256M
     ports:
       - "33157:3306"
     volumes:
       - agromatik_db_data:/var/lib/mysql
       - ./mysql-init:/docker-entrypoint-initdb.d
+      - ./mysql-logs:/var/log/mysql
     networks:
       - agromatik-network
     restart: unless-stopped
@@ -46,6 +58,14 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - --max_connections=100
+      - --innodb_buffer_pool_size=256M
+      - --innodb_log_file_size=48M
+      - --slow_query_log=1
+      - --long_query_time=2
 
 volumes:
   agromatik_db_data:
