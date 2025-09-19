@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  agromatik-cloud:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agromatik-cloud
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:mysql://agromatik-db:3306/agromatik_db
+      - SPRING_DATASOURCE_USERNAME=agromatik_user
+      - SPRING_DATASOURCE_PASSWORD=agromatik_password123
+    depends_on:
+      - agromatik-db
+    networks:
+      - agromatik-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  agromatik-db:
+    image: mysql:8.0
+    container_name: agromatik-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password_secure123
+      - MYSQL_DATABASE=agromatik_db
+      - MYSQL_USER=agromatik_user
+      - MYSQL_PASSWORD=agromatik_password123
+    ports:
+      - "33157:3306"
+    volumes:
+      - agromatik_db_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - agromatik-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  agromatik_db_data:
+    driver: local
+
+networks:
+  agromatik-network:
+    driver: bridge
