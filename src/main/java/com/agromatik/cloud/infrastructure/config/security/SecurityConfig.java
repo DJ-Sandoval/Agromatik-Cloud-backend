@@ -28,10 +28,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/usuarios/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
+                        .requestMatchers("/api/v1/agromatik/alertas/notificaciones/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/cultivos/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/alertas/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/recomendaciones/**").permitAll()

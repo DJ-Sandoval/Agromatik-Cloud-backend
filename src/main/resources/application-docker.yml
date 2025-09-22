@@ -1,4 +1,5 @@
 server:
+  address: 0.0.0.0
   port: ${PORT:8080}
 
 spring:
@@ -28,6 +29,7 @@ spring:
           order_inserts: true
           order_updates: true
 
+
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
@@ -50,7 +52,7 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redisAgromatik
       port: 6379
 
 jwt:

@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.10'
 
 services:
   agromatik-cloud:
@@ -24,6 +24,8 @@ services:
     depends_on:
       agromatik-db:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - agromatik-network
     restart: unless-stopped
@@ -66,6 +68,16 @@ services:
       - --innodb_log_file_size=48M
       - --slow_query_log=1
       - --long_query_time=2
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: redisAgromatik
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server
+    networks:
+      - agromatik-network
 
 volumes:
   agromatik_db_data:

@@ -7,6 +7,7 @@ import com.agromatik.cloud.domain.enums.Severity;
 import com.agromatik.cloud.domain.model.Alerta;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.infrastructure.config.app.AlertThresholdConfig;
+import com.agromatik.cloud.infrastructure.mail.AlertNotificationService;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringAlertaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ public class AlertaServiceImpl implements AlertaService {
     private final RecomendacionService recomendacionService;
     private final AlertaPort alertaPort;
     private final AlertThresholdConfig thresholdConfig;
+    private final AlertNotificationService notificationService;
 
 
     @Override
@@ -65,6 +67,13 @@ public class AlertaServiceImpl implements AlertaService {
 
                 Alerta alertaGuardada = alertaPort.guardar(alerta);
                 recomendacionService.generarRecomendacion(alertaGuardada);
+
+                // Notificaciones por email
+                notificationService.notificarAlerta(
+                        key, alerta.getDescripcion(),
+                        valor,
+                        alerta.getSeveridad().toString()
+                );
                 continue;
             }
 
