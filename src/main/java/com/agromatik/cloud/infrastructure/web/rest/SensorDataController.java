@@ -3,6 +3,7 @@ package com.agromatik.cloud.infrastructure.web.rest;
 import com.agromatik.cloud.application.port.in.AlertaService;
 import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.domain.model.SensorData;
+import com.agromatik.cloud.domain.service.SensorDataGeneratorService;
 import com.agromatik.cloud.domain.service.SensorDataService;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
 import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
@@ -31,6 +32,7 @@ public class SensorDataController {
     private final SensorDataUseCase useCase;
     private final SpringDataSensorRepository repository;
     private final AlertaService alertaService;
+    private final SensorDataGeneratorService dataGeneratorService;
 
     @PostMapping
     public SensorDataDTO save(@RequestBody SensorDataDTO dto) {
@@ -153,6 +155,34 @@ public class SensorDataController {
             return null;
         }
     }
+
+    @GetMapping(path = "/generate-random", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<SensorDataDTO> generateAndInsertRandomData() {
+        return Flux.interval(Duration.ofSeconds(20))
+                .map(sequence -> {
+                    // Generar datos aleatorios
+                    SensorDataDTO randomData = dataGeneratorService.generateRandomSensorData();
+                    log.info("Generando datos aleatorios: Temp={}°C, Hum={}%",
+                            randomData.getGeneralTemperature(), randomData.getGeneralHumidity());
+
+                    // Insertar en la base de datos
+                    try {
+                        SensorDataDTO savedData = useCase.save(randomData);
+                        log.info("Datos insertados correctamente. ID: {}",
+                                savedData.getTimestamp() != null ? savedData.getTimestamp() : "N/A");
+                        return savedData;
+                    } catch (Exception e) {
+                        log.error("Error insertando datos aleatorios: {}", e.getMessage());
+                        // Devolver los datos generados aunque falle la inserción para el stream
+                        return randomData;
+                    }
+                })
+                .onErrorResume(e -> {
+                    log.error("Error en el stream de datos aleatorios: {}", e.getMessage());
+                    return Flux.empty();
+                });
+    }
+
 
 
 }
