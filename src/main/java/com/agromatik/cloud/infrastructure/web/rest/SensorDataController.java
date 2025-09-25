@@ -6,21 +6,30 @@ import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.domain.service.SensorDataGeneratorService;
 import com.agromatik.cloud.domain.service.SensorDataService;
 import com.agromatik.cloud.infrastructure.mysql.repository.SpringDataSensorRepository;
+import com.agromatik.cloud.infrastructure.reports.pdf.PdfExportService;
 import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -33,6 +42,7 @@ public class SensorDataController {
     private final SpringDataSensorRepository repository;
     private final AlertaService alertaService;
     private final SensorDataGeneratorService dataGeneratorService;
+    private final PdfExportService pdfExportService;
 
     @PostMapping
     public SensorDataDTO save(@RequestBody SensorDataDTO dto) {
@@ -183,6 +193,49 @@ public class SensorDataController {
                 });
     }
 
+    @GetMapping("/export-pdf")
+    public ResponseEntity<ByteArrayResource> exportToPdf(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "false") boolean download) throws IOException {
 
+        // Obtener datos según el rango de fechas
+        List<SensorData> sensorDataList;
+        if (startDate != null && endDate != null) {
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+            sensorDataList = repository.findByTimestampBetween(startDateTime, endDateTime);
+        } else {
+            sensorDataList = repository.findTop100ByOrderByTimestampDesc(); // Límite para evitar PDFs muy grandes
+        }
 
+        // Convertir a DTO
+        List<SensorDataDTO> sensorDataDTOs = sensorDataList.stream()
+                .map(this::mapEntityToDto)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // Generar PDF
+        byte[] pdfBytes = pdfExportService.generateSensorDataPdf(sensorDataDTOs);
+        ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+
+        // Configurar headers según si es descarga o visualización
+        HttpHeaders headers = new HttpHeaders();
+        String filename = "reporte_lecturas_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".pdf";
+
+        if (download) {
+            // Descarga directa
+            headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        } else {
+            // Visualización en navegador
+            headers.setContentDisposition(ContentDisposition.inline().filename(filename).build());
+        }
+
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
+    }
 }
