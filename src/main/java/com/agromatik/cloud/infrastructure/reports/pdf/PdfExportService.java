@@ -43,7 +43,7 @@ public class PdfExportService {
 
                 // Cargar y agregar el icono
                 try {
-                    Resource resource = resourceLoader.getResource("classpath:static/add.png");
+                    Resource resource = resourceLoader.getResource("classpath:static/cloud.png");
                     if (resource.exists()) {
                         PDImageXObject icon = PDImageXObject.createFromFile(resource.getFile().getAbsolutePath(), document);
                         contentStream.drawImage(icon, margin, yPosition - 30, 30, 30);
