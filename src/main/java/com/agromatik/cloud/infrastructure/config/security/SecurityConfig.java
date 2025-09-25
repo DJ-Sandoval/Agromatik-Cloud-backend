@@ -30,14 +30,24 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/usuarios/**").permitAll()
-                        .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()
+                        .requestMatchers("/api/v1/agromatik/telerimetry/**").permitAll()  // ¡Este debe estar permitido!
                         .requestMatchers("/api/v1/agromatik/alertas/notificaciones/**").permitAll()
                         .requestMatchers("/api/agromatik/v1/cultivos/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/alertas/**").permitAll()
                         .requestMatchers("/api/v1/agromatik/recomendaciones/**").permitAll()
+                        .requestMatchers("/api/v1/agromatik/ssh/**").permitAll()
+
+                        // Swagger
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/v1/agromatik/ssh/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+
+                        // Actuator
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/info").permitAll()
+                        .requestMatchers("/actuator/prometheus").hasRole("MONITORING")
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
 
                         // Endpoints privados
                         .requestMatchers("/actuator/health").permitAll()

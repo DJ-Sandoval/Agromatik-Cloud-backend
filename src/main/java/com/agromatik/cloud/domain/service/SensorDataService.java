@@ -5,6 +5,7 @@ import com.agromatik.cloud.application.port.in.SensorDataUseCase;
 import com.agromatik.cloud.application.port.out.SensorDataPort;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.infrastructure.web.dto.SensorDataDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SensorDataService implements SensorDataUseCase {
@@ -20,8 +22,15 @@ public class SensorDataService implements SensorDataUseCase {
 
     @Override
     public SensorDataDTO save(SensorDataDTO dto) {
+        log.info("Guardando datos del sensor - Temp: {}, Hum: {}",
+                dto.getGeneralTemperature(), dto.getGeneralHumidity());
+
         SensorData entity = mapDtoToEntity(dto);
+        log.info("Entidad mapeada: {}", entity);
+
         SensorData saved = port.save(entity);
+        log.info("Entidad guardada en BD: {}", saved);
+
         alertaService.evaluarAlertas(saved);
         return mapEntityToDto(saved);
     }
@@ -37,20 +46,22 @@ public class SensorDataService implements SensorDataUseCase {
     }
 
     private SensorData mapDtoToEntity(SensorDataDTO dto) {
+        // Usar los campos PLANOS del DTO en lugar de los objetos nested
         return SensorData.builder()
-                .generalTemperature(dto.getGeneral() != null ? dto.getGeneral().getTemperature() : null)
-                .generalHumidity(dto.getGeneral() != null ? dto.getGeneral().getHumidity() : null)
-                .plantsTemperature(dto.getPlants() != null ? dto.getPlants().getTemperature() : null)
-                .plantsHumidity(dto.getPlants() != null ? dto.getPlants().getHumidity() : null)
-                .plantsSoilMoisture(dto.getPlants() != null ? dto.getPlants().getSoilMoisture() : null)
-                .waterSoilMoisture(dto.getWater() != null ? dto.getWater().getSoilMoisture() : null)
-                .waterPH(dto.getWater() != null ? dto.getWater().getPH() : null)
-                .waterTDS(dto.getWater() != null ? dto.getWater().getTDS() : null)
-                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now()) // Añadir esto
+                .generalTemperature(dto.getGeneralTemperature())
+                .generalHumidity(dto.getGeneralHumidity())
+                .plantsTemperature(dto.getPlantsTemperature())
+                .plantsHumidity(dto.getPlantsHumidity())
+                .plantsSoilMoisture(dto.getPlantsSoilMoisture())
+                .waterSoilMoisture(dto.getWaterSoilMoisture())
+                .waterPH(dto.getWaterPH())
+                .waterTDS(dto.getWaterTDS())
+                .timestamp(dto.getTimestamp() != null ? dto.getTimestamp() : LocalDateTime.now())
                 .build();
     }
 
     private SensorDataDTO mapEntityToDto(SensorData entity) {
+        // Crear objetos nested a partir de los campos planos de la entidad
         SensorDataDTO.GeneralData general = new SensorDataDTO.GeneralData();
         general.setTemperature(entity.getGeneralTemperature());
         general.setHumidity(entity.getGeneralHumidity());
@@ -77,6 +88,7 @@ public class SensorDataService implements SensorDataUseCase {
                 .waterSoilMoisture(entity.getWaterSoilMoisture())
                 .waterPH(entity.getWaterPH())
                 .waterTDS(entity.getWaterTDS())
+                .timestamp(entity.getTimestamp())
                 .build();
     }
 
