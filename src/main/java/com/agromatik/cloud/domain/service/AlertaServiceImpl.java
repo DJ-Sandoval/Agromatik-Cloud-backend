@@ -8,7 +8,7 @@ import com.agromatik.cloud.domain.model.Alerta;
 import com.agromatik.cloud.domain.model.SensorData;
 import com.agromatik.cloud.infrastructure.config.app.AlertThresholdConfig;
 import com.agromatik.cloud.infrastructure.mail.AlertNotificationService;
-import com.agromatik.cloud.infrastructure.mysql.repository.SpringAlertaRepository;
+import com.agromatik.cloud.infrastructure.mail.AutoEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +26,7 @@ public class AlertaServiceImpl implements AlertaService {
     private final AlertaPort alertaPort;
     private final AlertThresholdConfig thresholdConfig;
     private final AlertNotificationService notificationService;
-
+    private final AutoEmailService autoEmailService;
 
     @Override
     public void evaluarAlertas(SensorData data) {
@@ -45,82 +45,96 @@ public class AlertaServiceImpl implements AlertaService {
         );
 
         for (var entry : valores.entrySet()) {
-            String key = entry.getKey();
+            String parametro = entry.getKey(); // ✅ Cambiado de 'key' a 'parametro'
             Double valor = entry.getValue();
 
-            System.out.println("\nProcesando parámetro: " + key);
+            System.out.println("\nProcesando parámetro: " + parametro);
             System.out.println("Valor: " + valor);
 
             // Verificar si el sensor está desconectado
             if (valor != null && thresholdConfig.isDisconnected(valor)) {
-                System.out.println("Sensor desconectado detectado: " + key);
+                System.out.println("Sensor desconectado detectado: " + parametro);
+                String descripcion = "Sensor desconectado: " + parametro;
+                Severity severidad = Severity.CRITICA;
+
                 Alerta alerta = Alerta.builder()
-                        .parametro(key)
-                        .descripcion("Sensor desconectado: " + key)
+                        .parametro(parametro)
+                        .descripcion(descripcion)
                         .valorActual(valor)
                         .umbralMin(null)
                         .umbralMax(null)
                         .timestamp(LocalDateTime.now())
-                        .severidad(Severity.CRITICA)
+                        .severidad(severidad)
                         .leida(false)
                         .build();
 
                 Alerta alertaGuardada = alertaPort.guardar(alerta);
                 recomendacionService.generarRecomendacion(alertaGuardada);
 
-                // Notificaciones por email
-                notificationService.notificarAlerta(
-                        key, alerta.getDescripcion(),
-                        valor,
-                        alerta.getSeveridad().toString()
-                );
+                // ✅ CORREGIDO: Usando variables definidas
+                autoEmailService.enviarAlertaAutomatica(parametro, descripcion, valor, severidad.toString());
                 continue;
             }
 
-            AlertThresholdConfig.Threshold threshold = thresholdConfig.getThresholds().get(key);
-            System.out.println("Umbrales para " + key + ": min=" +
+            AlertThresholdConfig.Threshold threshold = thresholdConfig.getThresholds().get(parametro);
+            System.out.println("Umbrales para " + parametro + ": min=" +
                     (threshold != null ? threshold.min() : "null") +
                     ", max=" + (threshold != null ? threshold.max() : "null"));
 
             if (threshold == null) {
-                System.out.println("No hay umbrales definidos para " + key);
+                System.out.println("No hay umbrales definidos para " + parametro);
                 continue;
             }
 
             if (valor < threshold.min() || valor > threshold.max()) {
-                System.out.println("ALERTA: Valor fuera de umbral para " + key);
+                System.out.println("ALERTA: Valor fuera de umbral para " + parametro);
+                String descripcion = "Valor fuera de umbral: " + parametro;
+                Severity severidad = definirSeveridad(valor, threshold);
+
                 Alerta alerta = Alerta.builder()
-                        .parametro(key)
-                        .descripcion("Valor fuera de umbral: " + key)
+                        .parametro(parametro)
+                        .descripcion(descripcion)
                         .valorActual(valor)
                         .umbralMin(threshold.min())
                         .umbralMax(threshold.max())
                         .timestamp(LocalDateTime.now())
-                        .severidad(definirSeveridad(valor, threshold))
+                        .severidad(severidad)
                         .leida(false)
                         .build();
+
                 Alerta alertaGuardada = alertaPort.guardar(alerta);
                 recomendacionService.generarRecomendacion(alertaGuardada);
+
+                // ✅ CORREGIDO: Envío de email para alerta de umbral
+                autoEmailService.enviarAlertaAutomatica(parametro, descripcion, valor, severidad.toString());
             } else {
-                System.out.println("Valor dentro de umbrales para " + key);
+                System.out.println("Valor dentro de umbrales para " + parametro);
             }
         }
         System.out.println("=== FIN EVALUACIÓN ALERTAS ===");
     }
 
+    // Método simplificado para procesar valores individuales
     private void procesarValorSensor(String parametro, Double valor) {
+        if (valor == null) return;
+
         // Verificar sensor desconectado
         if (thresholdConfig.isDisconnected(valor)) {
+            String descripcion = "Sensor desconectado: " + parametro;
+            Severity severidad = Severity.CRITICA;
+
             alertaPort.guardar(Alerta.builder()
                     .parametro(parametro)
-                    .descripcion("Sensor desconectado: " + parametro)
+                    .descripcion(descripcion)
                     .valorActual(valor)
                     .umbralMin(null)
                     .umbralMax(null)
                     .timestamp(LocalDateTime.now())
-                    .severidad(Severity.CRITICA)
+                    .severidad(severidad)
                     .leida(false)
                     .build());
+
+            autoEmailService.enviarAlertaAutomatica(parametro, descripcion, valor, severidad.toString());
             return;
         }
 
@@ -128,7 +142,11 @@ public class AlertaServiceImpl implements AlertaService {
         if (threshold == null) return;
 
         if (valor < threshold.min() || valor > threshold.max()) {
+            String descripcion = "Valor fuera de umbral: " + parametro;
+            Severity severidad = definirSeveridad(valor, threshold);
+
             alertaPort.guardar(crearAlerta(parametro, valor, threshold));
+            autoEmailService.enviarAlertaAutomatica(parametro, descripcion, valor, severidad.toString());
         }
     }
 
@@ -176,12 +194,6 @@ public class AlertaServiceImpl implements AlertaService {
         alertaPort.actualizarTodasComoLeidas();
     }
 
-    private Double convertirSeguro(Integer value) {
-        return value == null ? null : value.doubleValue();
-    }
-
-
-
     private Alerta crearAlerta(String parametro, Double valor, AlertThresholdConfig.Threshold threshold) {
         return Alerta.builder()
                 .parametro(parametro)
@@ -204,5 +216,4 @@ public class AlertaServiceImpl implements AlertaService {
     public Page<Alerta> obtenerPorEstadoLecturaYSeveridades(boolean leida, List<Severity> severidades, Pageable pageable) {
         return alertaPort.buscarPorLeidaYSeveridades(leida, severidades, pageable);
     }
-
 }

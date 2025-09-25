@@ -1,6 +1,9 @@
 package com.agromatik.cloud.infrastructure.mail;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,9 +15,21 @@ public class AlertNotificationService {
     private final EmailAlertService emailAlertService;
     private final List<String> destinatariosAlertas = new ArrayList<>();
 
+    @Value("${spring.application.email.destinatario-automatico:}")
+    private String destinatarioAutomatico;
+
+    @PostConstruct
+    public void init() {
+        // Agregar destinatario automático al iniciar
+        if (destinatarioAutomatico != null && !destinatarioAutomatico.trim().isEmpty()) {
+            agregarDestinatario(destinatarioAutomatico);
+        }
+    }
+
     public void agregarDestinatario(String email) {
         if (!destinatariosAlertas.contains(email)) {
             destinatariosAlertas.add(email);
+            System.out.println("✅ Destinatario agregado: " + email);
         }
     }
 
@@ -27,6 +42,11 @@ public class AlertNotificationService {
     }
 
     public void notificarAlerta(String parametro, String descripcion, Double valorActual, String severidad) {
+        if (destinatariosAlertas.isEmpty()) {
+            System.out.println("⚠️  No hay destinatarios configurados para alertas");
+            return;
+        }
+
         String asunto = String.format("Alerta %s: %s", severidad, parametro);
         String contenido = construirContenidoEmail(parametro, descripcion, valorActual, severidad);
 
